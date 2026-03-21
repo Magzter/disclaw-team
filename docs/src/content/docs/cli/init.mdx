@@ -1,0 +1,44 @@
+---
+title: disclaw-team init
+description: Interactive setup wizard. Creates bots.yaml, assignment.yaml, and .env.
+---
+
+## Synopsis
+
+```bash
+disclaw-team init
+```
+
+## Description
+
+Walks you through creating a team configuration. Prompts for your Discord server ID, channel ID, workspace path, bot count, bot tokens, role assignments, and owner identity. Saves all configuration to `~/.disclaw-team/`.
+
+## What it creates
+
+| File / Directory | Purpose |
+|-----------------|---------|
+| `~/.disclaw-team/bots.yaml` | Bot infrastructure registry |
+| `~/.disclaw-team/assignment.yaml` | Role assignments and Discord config |
+| `~/.disclaw-team/.env` | Bot tokens (mode 0600, private) |
+| `~/.disclaw-team/roles/` | Preloaded role library |
+
+## Flags
+
+None.
+
+## Examples
+
+```bash
+# Run setup wizard (interactive)
+disclaw-team init
+```
+
+## Gotchas
+
+:::danger[Token naming formula]
+Token env var names are auto-derived from bot IDs: `bot-1` → `BOT_1_TOKEN`, `my-bot` → `MY_BOT_TOKEN`. The rule is: uppercase the ID, replace any non-alphanumeric characters with underscores, then append `_TOKEN`. Manual edits to `.env` that don't follow this formula break token resolution silently.
+:::
+
+:::caution[Re-running init]
+If `bots.yaml` and `assignment.yaml` already exist, `init` skips them. To reconfigure from scratch, delete `~/.disclaw-team/` first, then re-run `init`.
+:::

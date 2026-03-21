@@ -1,0 +1,65 @@
+---
+title: Discord Setup
+description: Create Discord applications and bot tokens for each bot in your team before running disclaw-team init.
+---
+
+You need a Discord application and bot token before running `disclaw-team init`. This guide walks through every step in the Discord Developer Portal, from creating an application to generating an invite URL.
+
+Each bot in your team requires its own application and token — for a 3-bot team, you'll repeat this process three times.
+
+## Step 1: Create an application
+
+1. Go to [https://discord.com/developers/applications](https://discord.com/developers/applications)
+2. Click **New Application** in the top right
+3. Give it a name (e.g. "My Orchestrator Bot") and click **Create**
+4. You'll be taken to the application's General Information page
+
+## Step 2: Create a bot
+
+1. Click **Bot** in the left sidebar
+2. Click **Add Bot**, then confirm with **Yes, do it!**
+3. Under **Token**, click **Reset Token** and copy the value that appears — you'll need this during `disclaw-team init`
+
+:::danger
+Keep your token secret. Anyone with your token can control your bot. Never commit it to git or share it publicly.
+:::
+
+## Step 3: Enable required intents
+
+Still on the **Bot** page, scroll down to **Privileged Gateway Intents** and enable both:
+
+- **Message Content Intent** — required; without it, bots receive empty message content
+- **Server Members Intent** — required for guild member data
+
+Click **Save Changes** before leaving the page.
+
+:::note[GuildMessages and DirectMessages]
+GuildMessages and DirectMessages are standard gateway intents, not privileged ones. They do not appear on this page and are automatically enabled in code — you don't need to do anything for those.
+:::
+
+:::danger[Missing intents]
+If your bots appear online but don't respond to messages, missing privileged intents is the most common cause. Both Message Content Intent and Server Members Intent must be enabled. See [Troubleshooting](../troubleshooting) for more detail.
+:::
+
+## Step 4: Generate an invite URL
+
+1. Click **OAuth2** → **URL Generator** in the left sidebar
+2. Under **Scopes**, check: `bot`, `applications.commands`
+3. Under **Bot Permissions**, check:
+   - `Send Messages`
+   - `Read Message History`
+   - `View Channels`
+   - `Add Reactions`
+4. Copy the generated URL at the bottom of the page
+5. Open the URL in your browser and select the server you want to invite the bot to
+
+## Repeat for each bot
+
+disclaw-team runs multiple bots concurrently — each one needs its own Discord application and token. For a 3-bot team, create 3 applications, 3 bots, and collect 3 tokens. You'll enter all of them during `disclaw-team init`.
+
+Give each application a distinct name so you can tell them apart in the Discord Developer Portal.
+
+## Related
+
+- [Prerequisites](./prerequisites)
+- [Installation](./installation)

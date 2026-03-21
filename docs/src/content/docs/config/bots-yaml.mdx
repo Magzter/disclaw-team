@@ -1,0 +1,60 @@
+---
+title: bots.yaml
+description: Bot infrastructure registry. Defines token environment variables and caches Discord user IDs.
+---
+
+**File location:** `~/.disclaw-team/bots.yaml`
+
+**Purpose:** The bot registry. Maps bot IDs to their token environment variable names. Discord user IDs are auto-populated here after first login.
+
+**Minimal valid example:**
+
+```yaml
+bots:
+  bot-1:
+    token_env: BOT_1_TOKEN
+  bot-2:
+    token_env: BOT_2_TOKEN
+```
+
+**Full example with optional fields:**
+
+```yaml
+bots:
+  bot-1:
+    token_env: BOT_1_TOKEN
+    discord_user_id: "1234567890123456789"
+  bot-2:
+    token_env: BOT_2_TOKEN
+    discord_user_id: "9876543210987654321"
+```
+
+**Field reference:**
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `bots` | object | Yes | — | Bot registry. Keys are bot IDs. |
+| `bots.<bot-id>.token_env` | string | Yes | — | Environment variable name for this bot's Discord token |
+| `bots.<bot-id>.discord_user_id` | string | No | — | Discord user snowflake. Auto-populated on first `start`. |
+
+**Token env var naming formula:**
+
+The env var name is derived from the bot ID:
+
+- Uppercase the ID
+- Replace all non-alphanumeric characters with underscores
+- Append `_TOKEN`
+
+Examples:
+
+| Bot ID | Token env var |
+|--------|--------------|
+| `bot-1` | `BOT_1_TOKEN` |
+| `my-bot` | `MY_BOT_TOKEN` |
+| `researcher` | `RESEARCHER_TOKEN` |
+
+:::danger[Token naming is strict]
+If the env var name in `bots.yaml` doesn't exactly match the key in `.env`, token resolution fails silently. The bot is skipped (new format) or startup aborts (legacy format). Always verify the formula when adding bots manually.
+:::
+
+**Related:** [Environment Variables](./env-vars), [CLI: init](../cli/init), [CLI: start](../cli/start)

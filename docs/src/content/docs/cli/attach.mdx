@@ -1,0 +1,57 @@
+---
+title: disclaw-team attach
+description: Attach to the running tmux session to observe or interact with bots directly.
+---
+
+## Synopsis
+
+```bash
+disclaw-team attach [bot-id]
+```
+
+## Description
+
+Opens the running `disclaw-team` tmux session. If `bot-id` is provided, switches to that bot's window first. Useful for debugging stuck bots or sending manual commands.
+
+## Arguments
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `bot-id` | No | Attach to this bot's window directly. Omit to attach to the active window. |
+
+## Flags
+
+None.
+
+## Tmux keyboard shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl-B d` | Detach (leave bots running) |
+| `Ctrl-B N` (number) | Switch to window N |
+| `Ctrl-B n` | Next window |
+| `Ctrl-B p` | Previous window |
+| `Ctrl-B w` | List all windows |
+
+## Examples
+
+```bash
+# Attach to active window
+disclaw-team attach
+```
+
+```bash
+# Attach to bot-1's window
+disclaw-team attach bot-1
+```
+
+```bash
+# Detach from session (inside tmux)
+# Press Ctrl-B, then d
+```
+
+## Gotchas
+
+:::danger[Window name truncation]
+Bot window names follow the pattern `<bot-id>-<role-name>` with the role name truncated to 15 characters. If two bots have roles sharing the first 15 characters of their name, `disclaw-team attach <bot-id>` may attach to the wrong window.
+:::

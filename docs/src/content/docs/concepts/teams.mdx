@@ -1,0 +1,36 @@
+---
+title: Teams & Presets
+description: What a team is, how presets work, and the 7 bundled templates.
+---
+
+## What a team is
+
+A team is a set of bots with assigned roles, connected to a Discord server. The team configuration lives in two files: `bots.yaml` (infrastructure) and `assignment.yaml` (roles + Discord).
+
+## Team presets
+
+disclaw-team ships with 7 bundled team templates to get you started quickly. Run `disclaw-team init` and select a template when prompted.
+
+| Template | Bots | Use case |
+|----------|------|----------|
+| `executive` | 3 (CEO, analyst, executor) | Strategic decisions + execution |
+| `dev` | 3 (tech lead, developer, reviewer) | Software development |
+| `research` | 3 (director, researcher, writer) | Research and reporting |
+| `product` | 4 (PM, designer, dev, QA) | Product development |
+| `content` | 3 (editor, writer, researcher) | Content creation |
+| `solo` | 1 (generalist) | Single-bot setup |
+| `custom` | any | Define your own from scratch |
+
+## How presets work
+
+A preset pre-fills the `init` wizard with a role assignment configuration. It doesn't lock you into anything — you can change role assignments at any time with `disclaw-team assign`.
+
+## Saving and loading teams
+
+Use `disclaw-team switch` to save the current team config as a named profile and load it later.
+
+:::danger[switch doesn't persist with new format]
+In new-format setups, `disclaw-team start` re-derives `team.yaml` from `bots.yaml` + `assignment.yaml` on every run. Changes loaded via `switch load` are overwritten the next time you start. Use the `overrides` block in `assignment.yaml` for persistent customizations.
+:::
+
+**Related:** [assignment.yaml](../config/assignment-yaml), [CLI: switch](../cli/switch), [Guides: Using Team Presets](../guides/team-presets)

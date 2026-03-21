@@ -1,0 +1,21 @@
+description: "Single assistant — drop-in replacement for stock Discord plugin"
+protocol:
+  communication:
+    selective_replies: false
+    acknowledge_teammates: false
+    react_before_responding: false
+  validation:
+    require_validation: false
+roles:
+  generalist:
+    description: "General-purpose AI assistant"
+    engagement:
+      respond_to_all_teammates: true
+      require_mention_from_humans: false
+bots:
+  assistant:
+    name_suggestion: "Assistant"
+    role: generalist
+    personality:
+      tagline: "General-purpose AI assistant"
+      tone: "Helpful and thorough"

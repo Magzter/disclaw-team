@@ -1,0 +1,46 @@
+---
+title: Roles & Role Types
+description: The four role types — orchestrator, specialist, executor, generalist — and how engagement rules work.
+---
+
+## What a role is
+
+A role is a YAML file that defines a bot's identity, behavior, and capabilities. It specifies what the bot does, how it speaks, when it engages, and what model it uses.
+
+Roles live in `~/.disclaw-team/roles/`. Each bot has exactly one role assigned in `assignment.yaml`.
+
+## The four role types
+
+### Orchestrator
+
+The team lead. Orchestrators receive tasks from humans and delegate sub-tasks to other bots via @mention. They don't do deep implementation work — they coordinate, validate, and report back. A team usually has one orchestrator.
+
+### Specialist
+
+Domain expert. Specialists receive tasks from the orchestrator and do the deep work in their area (research, writing, design review, etc.). They report back to whoever assigned the task.
+
+### Executor
+
+Action-taker. Executors run tools, make changes, and implement instructions. They're the hands of the team. Often assigned to tasks like writing code, editing files, or executing scripts.
+
+### Generalist
+
+No fixed domain. Generalists can take any task and are flexible in how they respond. Useful for small teams where strict role separation isn't needed.
+
+## Engagement rules
+
+Each role controls when its bot responds:
+
+| Rule | Default | Effect |
+|------|---------|--------|
+| `require_mention_from_humans` | `true` | Bot only responds to humans when @mentioned |
+| `require_mention_from_bots` | `true` | Bot only responds to other bots when @mentioned |
+| `respond_to_all_teammates` | `false` | Override: respond to all bot messages without @mention |
+
+These rules are enforced in each bot's `CLAUDE.md`, not in the MCP server. The `mentions_me` metadata flag on incoming messages is what bots check to decide whether to respond.
+
+:::note[requireMention in access.json is always false]
+The MCP server's `requireMention` field in `access.json` is always set to `false`. Engagement filtering happens in `CLAUDE.md` instructions, not at the server level. This is intentional — it gives bots full context of all messages while they decide whether to respond.
+:::
+
+**Related:** [Role Files](../config/role-files), [CLI: roles](../cli/roles), [CLI: assign](../cli/assign)

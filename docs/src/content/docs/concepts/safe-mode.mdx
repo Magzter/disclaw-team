@@ -1,0 +1,40 @@
+---
+title: Safe Mode
+description: How safe mode works — pre-approved tools, permission DMs, and timeout behavior.
+---
+
+## What safe mode is
+
+Safe mode is a permission layer for `disclaw-team start`. When enabled with `--safe`, bots have a restricted set of pre-approved tools. Any tool or action not on the list requires explicit human approval via Discord DM before proceeding.
+
+## Enabling safe mode
+
+```bash
+disclaw-team start --safe
+```
+
+## Pre-approved tools in safe mode
+
+These tools are automatically allowed without prompting:
+
+- File operations: `Read`, `Glob`, `Grep`, `Edit`, `Write`
+- Web: `WebSearch`, `WebFetch`
+- Claude: `Agent` (spawning subagents)
+- MCP Discord tools: `fetch_messages`, `reply`, `react`, `typing`
+- Common Bash commands (read-only operations)
+
+## How approval works
+
+When a bot attempts a tool not on the pre-approved list, a permission prompt is sent to the team owner's Discord DMs. The owner has 120 seconds to approve or deny. No response = automatic deny.
+
+:::danger[Timeout = deny]
+The polling timeout is 120 seconds. If the owner doesn't respond within that window, the permission is automatically denied. The bot receives a deny and must handle it gracefully. The hook script has a 130-second total timeout (10 seconds of grace after the poll window closes).
+:::
+
+## Use cases
+
+- Running bots on production infrastructure where accidental file writes are dangerous
+- Reviewing what tools a new bot configuration uses before trusting it fully
+- Demos where you want to show permission prompts in action
+
+**Related:** [CLI: start](../cli/start)

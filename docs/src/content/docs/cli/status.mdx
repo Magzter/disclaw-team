@@ -1,0 +1,50 @@
+---
+title: disclaw-team status
+description: Display team health — config, tokens, state, Discord registration, and running status.
+---
+
+## Synopsis
+
+```bash
+disclaw-team status
+```
+
+## Description
+
+Prints a health summary for all configured bots. Shows whether each bot has a valid token, generated state files, a Discord registry entry, and is currently running in the tmux session.
+
+## Flags
+
+None.
+
+## Output format
+
+```
+Team: My Team
+Session: running
+
+Bot         Role           Token  State  Discord  Running
+─────────────────────────────────────────────────────────
+bot-1       orchestrator   ✓      ✓      ✓        ✓
+bot-2       researcher     ✓      ✓      ✓        ✗
+
+Humans:
+  Jane Doe (owner) — 555666777...
+
+Run `disclaw-team start` to launch the team.
+```
+
+## Status column meanings
+
+| Column | ✓ means | ✗ means |
+|--------|---------|---------|
+| Token | Env var exists in `.env` | Missing or wrong name |
+| State | `access.json` exists | Never run `start` for this bot |
+| Discord | Registry file exists | Bot not yet logged in |
+| Running | Window in active tmux session | Bot stopped |
+
+## Examples
+
+```bash
+disclaw-team status
+```

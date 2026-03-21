@@ -1,0 +1,46 @@
+---
+title: Environment Variables
+description: Discord bot tokens and special environment variables recognized by disclaw-team.
+---
+
+**File location:** `~/.disclaw-team/.env`
+
+**Purpose:** Stores Discord bot tokens. File permissions are set to `0600` (readable only by you) on creation.
+
+**Format:**
+
+```bash
+BOT_1_TOKEN=MTA0NjU3...
+BOT_2_TOKEN=MTI1NDg4...
+BOT_3_TOKEN=MTY5MDA2...
+```
+
+**Token naming formula:**
+
+Token env var names are derived from bot IDs in `bots.yaml`. The formula:
+
+- Uppercase the bot ID
+- Replace non-alphanumeric characters with underscores
+- Append `_TOKEN`
+
+| Bot ID | Token env var |
+|--------|--------------|
+| `bot-1` | `BOT_1_TOKEN` |
+| `my-bot` | `MY_BOT_TOKEN` |
+| `researcher` | `RESEARCHER_TOKEN` |
+
+:::danger[Naming mismatch breaks silently]
+If the token key in `.env` doesn't match the `token_env` value in `bots.yaml`, the token won't be found. New format: bot is silently skipped. Legacy format: startup aborts. Always double-check the formula when adding bots manually.
+:::
+
+**Special environment variables:**
+
+| Variable | Description |
+|----------|-------------|
+| `DISCORD_ACCESS_MODE=static` | Freezes each bot's access.json at startup. Converts `pairing` mode to `allowlist` mode. Prevents runtime pairing changes. |
+
+:::note[DISCORD_ACCESS_MODE=static]
+This variable is rarely needed. Set it if you want to lock down bot access configurations so they can't be changed at runtime. When set, any bot with `dm_policy: pairing` is converted to `allowlist` mode using the current allowlist at startup time.
+:::
+
+**Related:** [bots.yaml](./bots-yaml), [CLI: init](../cli/init)

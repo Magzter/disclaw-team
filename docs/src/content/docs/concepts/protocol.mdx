@@ -1,0 +1,49 @@
+---
+title: Protocol
+description: Communication rules, validation chains, and escalation behavior — and how to override them.
+---
+
+## What protocol is
+
+Protocol is the set of rules that governs how bots communicate with each other and with humans. It covers three areas:
+
+- **Communication** — when to reply, how to react, whether to acknowledge
+- **Validation** — when to require a second opinion before shipping
+- **Escalation** — when to ask a human before proceeding
+
+## Auto-derived on every start
+
+Protocol rules are automatically derived from role assignments when you run `disclaw-team start`. Orchestrators get stricter defaults; executors get more permissive ones.
+
+:::caution[Protocol resets on every start]
+Any manual changes to protocol in `team.yaml` are overwritten the next time you start. The `overrides` block in `assignment.yaml` is the only persistent way to customize protocol behavior.
+:::
+
+## Customizing with overrides
+
+Add an `overrides.protocol` block to `assignment.yaml`:
+
+```yaml
+overrides:
+  protocol:
+    communication:
+      selective_replies: true        # Only reply when @mentioned
+      react_before_responding: true  # React first, then reply
+      default_reaction: "👀"         # "I'm on it" emoji
+      completion_reaction: "✅"       # "Done" emoji
+    validation:
+      require_validation: true
+      never_skip_for:
+        - security changes
+    escalation:
+      human_approval_required:
+        - deploy to production
+```
+
+## requireMention behavior
+
+:::note[requireMention is always false in access.json]
+The MCP server's `requireMention` field is always set to `false` in `access.json`. Engagement filtering — deciding whether to respond to a message — happens in each bot's `CLAUDE.md` instructions using the `mentions_me` metadata flag. This is intentional: bots need full message context to make good engagement decisions.
+:::
+
+**Related:** [assignment.yaml](../config/assignment-yaml), [Concepts: Roles](./roles)

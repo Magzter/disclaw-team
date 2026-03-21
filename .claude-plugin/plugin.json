@@ -1,0 +1,8 @@
+{
+  "name": "disclaw-team",
+  "description": "Multi-bot AI team manager for Discord. Deploy a team of specialized AI assistants from a single machine.",
+  "version": "0.1.0",
+  "keywords": ["discord", "team", "multi-bot", "channel", "mcp"],
+  "homepage": "https://github.com/Magzter/disclaw-team",
+  "license": "MIT"
+}

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "disclaw-team": {
+      "command": "bun",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/src/server/server.ts"]
+    }
+  }
+}

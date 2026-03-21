@@ -1,0 +1,47 @@
+---
+title: How It Works
+description: Architecture overview — separate Claude sessions, tmux, MCP servers, and the Discord gateway.
+---
+
+**The core idea:** Every bot is an independent Claude Code process connected to Discord through an MCP server. There's no central coordinator — each bot reasons on its own.
+
+## Architecture layers
+
+### 1. Claude Code sessions
+
+Each bot runs as a separate `claude` process with `--append-system-prompt` for personality and `--mcp-config` pointing to its MCP server. Sessions are isolated: different context, different state, different reasoning.
+
+### 2. tmux session management
+
+All bot sessions live in a single tmux session named `disclaw-team`. Each bot gets one window. `disclaw-team start` creates the session and launches all windows; `disclaw-team stop` kills it.
+
+### 3. MCP server (Discord bridge)
+
+Each bot has a dedicated MCP server instance (a fork of the stock Discord plugin). The server:
+
+- Connects to Discord's gateway as the bot user
+- Exposes `fetch_messages`, `reply`, `react`, `typing` tools to Claude
+- Tags every incoming message with `mentions_me` and `mentioned_users` metadata
+- Passes bot identity via `BOT_ID` environment variable
+
+### 4. Bot-to-bot visibility
+
+All bots see all messages in their configured channels. The MCP server does not filter by recipient. Engagement decisions (whether to respond) are handled entirely by each bot's `CLAUDE.md` instructions — specifically the `mentions_me` metadata flag.
+
+### 5. Per-bot state
+
+Each bot has a state directory at `~/.disclaw-team/bots/<bot-id>/` containing:
+
+- `access.json` — DM policy and allowlists for the MCP server
+- `CLAUDE.md` — personality and engagement rules (the system prompt)
+- `mcp-config.json` — MCP server connection config
+- `settings.json` — Claude Code permissions (pre-approved tools in safe mode)
+- `launch.sh` — generated launch command
+
+## Why separate sessions, not subagents
+
+A single-session approach — one Claude instance playing different roles via subagents — collapses into one mind wearing different masks. You get surface-level variation, not genuine disagreement. When an orchestrator delegates to a researcher, they should have separate context, separate reasoning, and the ability to push back on each other.
+
+Separate processes make that possible. The tradeoff is higher resource usage (one Claude session per bot), but for teams doing real work, the quality difference is significant.
+
+**Related:** [Roles & Role Types](./roles), [Teams & Presets](./teams), [Protocol](./protocol)

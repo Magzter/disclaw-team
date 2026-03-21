@@ -1,0 +1,73 @@
+---
+title: disclaw-team switch
+description: Save and load named team configuration profiles.
+---
+
+## Synopsis
+
+```bash
+disclaw-team switch <save|load|list|delete> [name]
+```
+
+## Description
+
+Manages named team configuration profiles. Save your current team config under a name, load a previously saved profile to swap configurations, list all saved profiles, or permanently delete one.
+
+## Subcommands
+
+### `disclaw-team switch save <name>`
+
+Save the current config as a named profile. Creates `~/.disclaw-team/profiles/<name>/team.yaml`.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `name` | Yes | Name for this profile (e.g., `production`, `staging`) |
+
+### `disclaw-team switch load <name>`
+
+Load a saved profile. Stops the running team before switching.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `name` | Yes | Profile name to load |
+
+### `disclaw-team switch list`
+
+List all saved profiles. The active profile is marked with `*`.
+
+### `disclaw-team switch delete <name>`
+
+Permanently delete a saved profile.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `name` | Yes | Profile name to delete |
+
+## Examples
+
+```bash
+# Save current config as "production"
+disclaw-team switch save production
+```
+
+```bash
+# List all profiles
+disclaw-team switch list
+```
+
+```bash
+# Switch to staging config
+disclaw-team switch load staging
+disclaw-team start
+```
+
+```bash
+# Delete a profile
+disclaw-team switch delete old-setup
+```
+
+## Gotchas
+
+:::danger[New format limitation]
+With the new config format (`bots.yaml` + `assignment.yaml`), `disclaw-team start` re-derives `team.yaml` from scratch on every run. This means changes loaded via `switch load` are overwritten the next time you run `start`. To customize team behavior persistently, use the `overrides` block in `assignment.yaml` instead. See [assignment.yaml](../config/assignment-yaml).
+:::

@@ -1,0 +1,69 @@
+---
+title: disclaw-team start
+description: Launch bots in a tmux session. Supports single-bot start and safe mode.
+---
+
+## Synopsis
+
+```bash
+disclaw-team start [bot-id] [--safe]
+```
+
+## Description
+
+Launches all configured bots (or a single bot by ID) in a tmux session named `disclaw-team`. Generates per-bot state files, builds MCP configs, and launches Claude Code sessions. On first run, performs a two-phase startup to resolve Discord @mention IDs.
+
+## Arguments
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `bot-id` | No | Start only this bot. Omit to start all bots. |
+
+## Flags
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--safe` | boolean | false | Enable safe mode — pre-approves common dev tools (read, edit, write, git, package managers) and routes remaining permission prompts to the owner's Discord DMs |
+
+:::caution[Safe mode timeout]
+In safe mode, permission prompts time out after 120 seconds. No response from the owner equals an automatic deny. See [Safe Mode](../concepts/safe-mode).
+:::
+
+## Examples
+
+```bash
+# Start all bots
+disclaw-team start
+```
+
+```bash
+# Start only bot-1
+disclaw-team start bot-1
+```
+
+```bash
+# Start all bots in safe mode
+disclaw-team start --safe
+```
+
+## Gotchas
+
+:::caution[Two-phase first run]
+On first launch, bots restart once automatically approximately 30 seconds after startup. Claude Code initializes, then the harness restarts each bot with full configuration injected. Wait 60 seconds before assuming something is wrong. Do not run `disclaw-team stop` during this window. See [Troubleshooting](../troubleshooting).
+:::
+
+:::danger[Auto-confirm timing]
+`start` sends two Enter keypresses per bot window to confirm Claude startup. If Claude is slow to initialize, the keypresses miss the prompt and the bot session stalls silently. Fix: run `disclaw-team attach`, find stalled windows, and press Enter manually.
+:::
+
+:::danger[Token naming]
+Missing tokens in the new format cause that bot to be silently skipped with a warning. Missing tokens in the legacy format cause a hard error and all bots fail to start.
+:::
+
+:::danger[Tmux window truncation]
+Role names are truncated to 15 characters in tmux window names. If two bots have roles whose names share the first 15 characters, their windows collide.
+:::
+
+:::caution[Schedule injection delay]
+If `schedules.yaml` exists, schedules are injected 15 seconds after start. If a bot is still initializing at that point, injection fails silently.
+:::

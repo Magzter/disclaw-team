@@ -1,0 +1,56 @@
+---
+title: Troubleshooting
+description: Common issues and how to resolve them.
+---
+
+Common issues and how to fix them.
+
+## Bots not appearing in Discord
+
+**Cause:** Missing Discord gateway intents.
+
+**Fix:** Go to the [Discord Developer Portal](https://discord.com/developers/applications) → select your application → **Bot** → scroll to **Privileged Gateway Intents**. Enable both:
+
+- Message Content Intent
+- Server Members Intent
+
+Click **Save Changes**, then restart with `disclaw-team stop && disclaw-team start`.
+
+This is the most common cause of bots that appear online but don't respond to messages. See [Discord Setup](./getting-started/discord-setup) for the full intents walkthrough.
+
+## Two-phase restart on first run
+
+On first launch, bots restart once automatically approximately 30 seconds after startup. This is expected behavior — Claude Code initializes, then the harness restarts each bot with the full configuration injected. Your bots will be fully operational after the restart.
+
+Wait 60 seconds total before assuming something is wrong. Do not interrupt the process or run `disclaw-team stop` during this window.
+
+## Bots fail to start silently
+
+**Cause:** Claude Code startup timing. The `start` command sends keystrokes to confirm the Claude startup prompt, but if Claude is slow to initialize, the keystrokes miss the prompt and the session stalls.
+
+**Fix:**
+
+1. Run `disclaw-team attach` to open the tmux session
+2. Use `Ctrl+B` then a window number to cycle through bot windows
+3. In any window showing a Claude startup prompt, press **Enter** manually to proceed
+
+Once confirmed, the bot will continue initializing normally.
+
+## Token errors
+
+The environment variable naming formula is strict:
+
+| Bot ID | Token env var |
+|--------|--------------|
+| `bot-1` | `BOT_1_TOKEN` |
+| `my-bot` | `MY_BOT_TOKEN` |
+| `researcher` | `RESEARCHER_TOKEN` |
+
+The rule: hyphens become underscores, the name is uppercased, and `_TOKEN` is appended.
+
+**Behavior by format version:**
+
+- **New format:** A missing token logs a warning and silently skips that bot. Other bots continue starting.
+- **Legacy format:** A missing token is a hard error that aborts the entire startup sequence.
+
+**Fix:** Open your `.env` file and verify each token variable matches the formula for its bot ID. Then run `disclaw-team status` to confirm which bots are running.

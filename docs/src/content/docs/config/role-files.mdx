@@ -1,0 +1,99 @@
+---
+title: Role Files
+description: YAML schema for individual bot roles. Personality, engagement rules, delegation, and model config.
+---
+
+**File location:** `~/.disclaw-team/roles/<role-id>.yaml`
+
+**Purpose:** Defines a bot's identity. Each role file specifies how a bot presents itself, when it engages, what it can delegate, and which model it uses.
+
+**Minimal valid example:**
+
+```yaml
+name: Researcher
+type: specialist
+description: Handles deep research and analysis tasks.
+personality:
+  tagline: Thorough, curious, evidence-driven
+```
+
+**Full schema example:**
+
+```yaml
+name: Tech Lead
+type: orchestrator
+description: Technical leader who owns architecture and code quality.
+leadership_style: Delegative
+
+responsibilities:
+  - Define technical direction
+  - Review critical code changes
+  - Mentor the team
+
+personality:
+  tagline: Chief architect of the technical vision
+  tone: Precise and technical, but collaborative
+  domain:
+    - architecture
+    - code-review
+    - technical-planning
+  instructions: |
+    You own the technical direction. Think architecture first,
+    then delegate implementation. When in doubt, ask.
+
+engagement:
+  respond_to_all_teammates: false
+  require_mention_from_humans: true
+  require_mention_from_bots: true
+
+delegation:
+  can_delegate_to:
+    - executor
+    - specialist
+  reports_to:
+    - owner
+
+execution:
+  use_subagents: true
+  keep_main_thread_free: true
+
+presentation:
+  use_visuals: false
+  frame_with_conviction: true
+
+model_config:
+  model: opus
+  reasoning: high
+```
+
+**Field reference:**
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `name` | string | Yes | — | Display name shown in CLAUDE.md |
+| `type` | enum | Yes | — | `orchestrator`, `specialist`, `executor`, `generalist` |
+| `description` | string | Yes | — | Long description |
+| `personality.tagline` | string | Yes | — | One-line identity statement |
+| `personality.tone` | string | No | `Professional` | How the bot speaks |
+| `personality.domain` | array | No | `[]` | Areas of expertise |
+| `personality.instructions` | string | No | `""` | Extended system prompt additions |
+| `engagement.respond_to_all_teammates` | bool | No | `false` | Always respond, without @mention |
+| `engagement.require_mention_from_humans` | bool | No | `true` | Humans must @mention to get response |
+| `engagement.require_mention_from_bots` | bool | No | `true` | Other bots must @mention to get response |
+| `delegation.can_delegate_to` | array | No | `[]` | Role types this bot can assign work to |
+| `delegation.reports_to` | array | No | `[]` | Role types this bot reports to |
+| `execution.use_subagents` | bool | No | `true` | Can spawn Claude subagents for deep work |
+| `execution.keep_main_thread_free` | bool | No | `true` | Stay responsive to Discord while working |
+| `model_config.model` | enum | No | `sonnet` | `opus`, `sonnet`, `haiku` |
+| `model_config.reasoning` | enum | No | `medium` | `low`, `medium`, `high`, `max` |
+
+**Role types:**
+
+| Type | Description |
+|------|-------------|
+| `orchestrator` | Delegates tasks to other bots, owns outcomes |
+| `specialist` | Deep expertise in a domain, receives tasks |
+| `executor` | Runs actions and tools, implements instructions |
+| `generalist` | Flexible, no fixed domain |
+
+**Related:** [CLI: roles](../cli/roles), [CLI: assign](../cli/assign), [Concepts: Roles](../concepts/roles)

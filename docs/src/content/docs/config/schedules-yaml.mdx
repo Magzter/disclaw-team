@@ -1,0 +1,78 @@
+---
+title: schedules.yaml
+description: Recurring tasks to inject into bots on a cron schedule.
+---
+
+**File location:** `~/.disclaw-team/schedules.yaml` (optional)
+
+**Purpose:** Define recurring prompts that are injected into specific bots on a schedule. Useful for news digests, status reports, or any recurring automated task.
+
+**Minimal valid example:**
+
+```yaml
+schedules:
+  - id: daily-standup
+    name: Daily Standup
+    bot_id: bot-1
+    cron: "0 9 * * *"
+    prompt: "Post a daily standup summary for the team."
+    enabled: true
+```
+
+**Full example with multiple schedules:**
+
+```yaml
+schedules:
+  - id: morning-digest
+    name: Morning AI News
+    bot_id: bot-2
+    cron: "3 9 * * *"
+    prompt: "Search for and post the top AI news from the last 24 hours."
+    enabled: true
+
+  - id: weekly-review
+    name: Weekly Review
+    bot_id: bot-1
+    cron: "0 9 * * 1"
+    prompt: "Post a weekly team performance review."
+    enabled: false
+```
+
+**Field reference:**
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `schedules` | array | Yes | — | Array of schedule entries |
+| `id` | string | Yes | — | Unique identifier (no spaces) |
+| `name` | string | Yes | — | Display name |
+| `bot_id` | string | Yes | — | Bot to receive the prompt |
+| `cron` | string | Yes | — | Cron expression (5 fields) |
+| `prompt` | string | Yes | — | Task prompt to inject |
+| `enabled` | bool | Yes | — | `true` to activate, `false` to skip |
+
+**Cron syntax:**
+
+```
+┌──────── minute (0-59)
+│ ┌────── hour (0-23)
+│ │ ┌──── day of month (1-31)
+│ │ │ ┌── month (1-12)
+│ │ │ │ ┌ day of week (0=Sunday, 6=Saturday)
+│ │ │ │ │
+* * * * *
+```
+
+Common examples:
+
+| Cron | Meaning |
+|------|---------|
+| `0 9 * * *` | Every day at 9:00 AM |
+| `0 9,15,21 * * *` | 9 AM, 3 PM, 9 PM daily |
+| `0 9 * * 1` | Every Monday at 9 AM |
+| `*/30 * * * *` | Every 30 minutes |
+
+:::caution[Schedule injection delay]
+Schedules are injected 15 seconds after `disclaw-team start`. If a bot is still initializing at that point (common on first run), the injection fails silently. If schedules aren't running, try `disclaw-team stop && disclaw-team start` after the bots are fully up.
+:::
+
+**Related:** [CLI: start](../cli/start), [Guides: Scheduling Tasks](../guides/scheduling)

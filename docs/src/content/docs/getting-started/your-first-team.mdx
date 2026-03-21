@@ -1,0 +1,69 @@
+---
+title: Your First Team
+description: Walk through the executive template — the default 3-bot team that ships with disclaw-team.
+---
+
+This guide walks through the executive template — the default team that ships with disclaw-team. It's the fastest way to get a working multi-bot setup without writing any configuration by hand.
+
+## What the executive template includes
+
+The executive template is a 3-bot team:
+
+- **Orchestrator** — the entry point. Listens for tasks in the configured channel, delegates work to other bots via Discord @mentions, and synthesizes results.
+- **Researcher** — handles web search, reading, and analysis. Spawns subagents for deep research tasks.
+- **Writer** — produces documents, summaries, and reports based on research results.
+
+The orchestrator delegates via Discord @mentions rather than spawning subagents directly. This keeps each bot as an independent Claude session with its own reasoning — genuine collaboration, not one mind wearing three masks.
+
+## Running init with the executive template
+
+```bash
+disclaw-team init
+```
+
+When prompted for a template, select `executive`. The wizard pre-fills all role assignments — just supply your bot tokens (one per bot) and your server ID.
+
+If you haven't set up your bot tokens yet, see [Discord Setup](./discord-setup) first.
+
+## Starting the team
+
+```bash
+disclaw-team start
+```
+
+## What to expect in Discord
+
+Once the team is running:
+
+- Each bot comes online as a separate Discord user with its own name and avatar
+- Bots show a typing indicator while processing
+- The orchestrator listens for messages in the channel you configured during init
+- @mention the orchestrator to start a task:
+
+  ```
+  @Orchestrator research the top 5 JavaScript frameworks and write a comparison
+  ```
+
+The orchestrator will @mention the Researcher, who will do the research and report back. The orchestrator then @mentions the Writer to produce the final output.
+
+## Two-phase first run
+
+:::caution[First run restart]
+On first launch, each bot restarts once automatically after approximately 30 seconds. This is expected behavior — Claude Code initializes, then the harness restarts it with the full configuration injected. Your bots will be fully operational after the restart. Do not interrupt the process. Wait 60 seconds total before assuming something is wrong.
+:::
+
+## Attaching to a bot session
+
+To inspect what a bot is doing or troubleshoot a stuck session:
+
+```bash
+disclaw-team attach
+```
+
+This drops you into the tmux session. Use `Ctrl+B` then a window number to switch between bots. Each window is one bot's Claude Code session.
+
+## Related
+
+- [Quick Start](./quick-start)
+- [CLI: start](../cli/start)
+- [CLI: attach](../cli/attach)

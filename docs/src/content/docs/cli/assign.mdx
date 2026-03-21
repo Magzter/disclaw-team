@@ -1,0 +1,48 @@
+---
+title: disclaw-team assign
+description: Change a bot's role assignment and update assignment.yaml.
+---
+
+## Synopsis
+
+```bash
+disclaw-team assign <bot-id> <role-id>
+```
+
+## Description
+
+Updates a bot's role in `assignment.yaml`. The change takes effect on the next `disclaw-team start`. Does not auto-restart the bot.
+
+## Arguments
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `bot-id` | Yes | Bot to reassign (e.g., `bot-1`) |
+| `role-id` | Yes | Role filename without `.yaml` extension (e.g., `researcher`, `tech-lead`) |
+
+## Flags
+
+None.
+
+## Examples
+
+```bash
+# Assign researcher role to bot-2
+disclaw-team assign bot-2 researcher
+```
+
+```bash
+# Apply the change
+disclaw-team start bot-2
+```
+
+```bash
+# List available roles
+disclaw-team roles list
+```
+
+## Gotchas
+
+:::caution[Restart required]
+`assign` only writes to `assignment.yaml`. The running bot keeps its current role until restarted. Run `disclaw-team start <bot-id>` to apply the new assignment.
+:::

@@ -1,0 +1,48 @@
+---
+title: Quick Start
+description: One command from zero to a running AI team in your Discord server.
+---
+
+One command from zero to a running team in your Discord server.
+
+## Run the setup
+
+```bash
+npx disclaw-team init
+```
+
+This installs disclaw-team, runs the setup wizard, and launches your bots. Have your Discord bot tokens ready from [Discord Setup](./discord-setup) before running.
+
+:::note[First run restart]
+On first launch, bots restart once automatically to pick up Discord user IDs. This is expected — see [Your First Team](./your-first-team) for details.
+:::
+
+## Open the dashboard
+
+Once init completes, open [http://localhost:5173](http://localhost:5173). The onboarding wizard walks you through:
+
+- Discord server and channel configuration
+- Bot token setup
+- Role assignment (pick from 22 preloaded roles)
+- Team preset selection
+
+After onboarding, the dashboard is the primary way to manage your team day-to-day:
+
+- Assign and swap roles visually
+- Start/stop/restart individual bots or the whole team
+- Switch between team presets with one click
+- Create and edit custom roles
+- Set up recurring schedules
+- Monitor live status
+
+See [Using the Web Dashboard](../guides/web-dashboard) for a full walkthrough.
+
+## You're live
+
+Your bots are running in Discord. Try @mentioning the orchestrator bot to kick off a task.
+
+## Related
+
+- [Your First Team](./your-first-team)
+- [Using the Web Dashboard](../guides/web-dashboard)
+- [CLI Reference](../cli/overview)

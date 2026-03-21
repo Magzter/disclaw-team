@@ -1,0 +1,25 @@
+---
+title: CLI Overview
+description: All disclaw-team commands at a glance.
+---
+
+`disclaw-team` is the main CLI binary. It manages the full lifecycle of your bot team — from initial setup through day-to-day operations like starting, stopping, and reconfiguring bots.
+
+Install via `npm install -g disclaw-team` or run with `npx disclaw-team`. See [Installation](../getting-started/installation) for details.
+
+:::tip[Prefer the web dashboard?]
+Most day-to-day management (role swapping, start/stop, schedules) is easier through the [web dashboard](../guides/web-dashboard). The CLI is best for initial setup and automation.
+:::
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `init` | Interactive setup wizard |
+| `start [bot-id] [--safe]` | Launch bots in tmux session |
+| `stop [bot-id]` | Stop bots or entire session |
+| `attach [bot-id]` | Attach to tmux session |
+| `status` | Show team health |
+| `assign <bot-id> <role-id>` | Change a bot's role |
+| `roles <list\|show\|install>` | Manage roles |
+| `switch <save\|load\|list\|delete> <name>` | Save/load team profiles |

@@ -1,0 +1,42 @@
+---
+title: disclaw-team stop
+description: Stop all bots or a single bot by ID.
+---
+
+## Synopsis
+
+```bash
+disclaw-team stop [bot-id]
+```
+
+## Description
+
+Stops all bots by terminating the `disclaw-team` tmux session. If `bot-id` is provided, stops only that bot's window. Does not delete state files.
+
+## Arguments
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `bot-id` | No | Stop only this bot. Omit to stop all bots and close the session. |
+
+## Flags
+
+None.
+
+## Examples
+
+```bash
+# Stop all bots
+disclaw-team stop
+```
+
+```bash
+# Stop only bot-2
+disclaw-team stop bot-2
+```
+
+## Gotchas
+
+:::note[State is preserved]
+`stop` only kills tmux windows. State files in `~/.disclaw-team/bots/<bot-id>/` are preserved. Run [`disclaw-team start`](./start) to relaunch with the same config.
+:::

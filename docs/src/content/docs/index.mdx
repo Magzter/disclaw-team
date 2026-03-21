@@ -1,0 +1,41 @@
+---
+title: disclaw-team
+description: Deploy multi-bot AI teams to Discord. Built on Claude Code Channels, powered by your Claude Pro subscription.
+---
+
+**Deploy AI teams to Discord.**
+
+disclaw-team is an open-source tool that runs a team of AI assistants in your Discord server. Built on [Claude Code Channels](https://docs.anthropic.com/en/docs/claude-code/channels), every bot runs as a full Claude Code session through your existing Claude Pro subscription. No API keys, no per-token billing. 22 preloaded roles, 6 team presets, and a web dashboard to manage it all.
+
+```bash
+npx disclaw-team init
+```
+
+## What it does
+
+You configure a team of bots — an orchestrator to delegate, specialists to research or analyse, executors to build. Each bot gets a Discord identity and shows up in your server as a separate user. They collaborate via Discord messages, @mentioning each other to delegate tasks, just like a real team.
+
+The [web dashboard](./guides/web-dashboard) at `localhost:5173` is the primary way to manage your team — onboarding wizard, role assignment, team presets, schedules, and live status.
+
+## Why separate sessions
+
+Each bot is a fully independent Claude Code process. This is a deliberate design choice.
+
+A single-session approach — one Claude instance playing multiple roles — collapses into one mind wearing different masks. You get surface-level variation, not genuine disagreement. When an orchestrator delegates to a researcher, they should actually have separate context, separate reasoning, and the ability to push back on each other.
+
+Separate sessions make that possible.
+
+## Who it's for
+
+- **Developers** who want to automate workflows with AI agents coordinating in real time
+- **Teams** who want an AI operations team running in their existing Discord workspace
+- **Builders** who want to experiment with multi-agent architectures without managing infrastructure
+
+## Get started
+
+New to disclaw-team? Start here:
+
+1. [Discord Setup](./getting-started/discord-setup) — create your bot applications and get tokens
+2. [Prerequisites](./getting-started/prerequisites) — Node.js, tmux, Claude Code
+3. [Installation](./getting-started/installation) — install via npm or npx
+4. [Quick Start](./getting-started/quick-start) — one command to deploy

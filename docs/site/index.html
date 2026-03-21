@@ -1,0 +1,2213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>disclaw-team — Deploy AI teams to Discord</title>
+  <meta name="description" content="Deploy a team of AI assistants to your Discord server. Multiple Claude Code bots, distinct roles, real collaboration.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070707;
+      --surface: #0e0e0e;
+      --border: #1a1a1a;
+      --border-bright: #2a2a2a;
+      --text: #888;
+      --bright: #f0f0f0;
+      --dim: #444;
+      --violet: #8b5cf6;
+      --violet-dim: rgba(139,92,246,0.12);
+      --lime: #a3e635;
+      --lime-dim: rgba(163,230,53,0.1);
+      --amber: #fbbf24;
+      --amber-dim: rgba(251,191,36,0.1);
+      --cyan: #06b6d4;
+      --cyan-dim: rgba(6,182,212,0.1);
+      --rose: #f43f5e;
+      --display: 'Space Grotesk', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ─── Shared ─── */
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+    .wrap-narrow { max-width: 780px; margin: 0 auto; padding: 0 2rem; }
+
+    a { color: var(--violet); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ─── Hero bg pulse ─── */
+    .hero-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 100vh;
+      background: radial-gradient(ellipse at 30% 20%, rgba(139,92,246,0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+      animation: bgpulse 8s ease-in-out infinite;
+    }
+
+    @keyframes bgpulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ─── Top bar ─── */
+    .topbar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 2rem;
+      border-bottom: 1px solid var(--border);
+      max-width: 100%;
+    }
+
+    .topbar-logo {
+      font-family: var(--display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--bright);
+      letter-spacing: -0.01em;
+    }
+
+    .topbar-logo span { color: var(--violet); }
+
+    .topbar-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      color: var(--lime);
+    }
+
+    .pulse-dot {
+      width: 6px; height: 6px;
+      background: var(--lime);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(163,230,53,0.6);
+      animation: pulsedot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulsedot { 50% { opacity: 0.2; box-shadow: none; } }
+
+    .topbar-links {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      font-size: 0.78rem;
+      color: var(--dim);
+    }
+
+    .topbar-links a { color: var(--dim); transition: color 0.15s; }
+    .topbar-links a:hover { color: var(--bright); text-decoration: none; }
+
+    /* ─── Hero section ─── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      padding: 6rem 2rem 5rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .hero-left {}
+
+    .hero-eyebrow {
+      font-size: 0.72rem;
+      color: var(--violet);
+      letter-spacing: 0.08em;
+      margin-bottom: 1.4rem;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      font-family: var(--display);
+      font-size: clamp(2.8rem, 4.5vw, 4rem);
+      font-weight: 800;
+      color: var(--bright);
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.4rem;
+    }
+
+    .hero h1 .hl-v { color: var(--violet); }
+    .hero h1 .hl-l { color: var(--lime); }
+
+    .hero-desc {
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.7;
+      max-width: 400px;
+      margin-bottom: 2.2rem;
+    }
+
+    .hero-ctas {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .cta-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--violet);
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.65rem 1.4rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    .cta-primary:hover {
+      background: #7c3aed;
+      box-shadow: 0 0 20px rgba(139,92,246,0.35);
+      text-decoration: none;
+    }
+
+    .cta-secondary {
+      font-size: 0.82rem;
+      color: var(--text);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .cta-secondary:hover {
+      color: var(--bright);
+      text-decoration: none;
+    }
+
+    .install-cmd {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: var(--surface);
+      border: 1px solid var(--border-bright);
+      border-radius: 8px;
+      padding: 0.75rem 1.2rem;
+      font-size: 0.8rem;
+      color: var(--cyan);
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+
+    .install-cmd:hover {
+      border-color: var(--violet);
+      box-shadow: 0 0 20px rgba(139,92,246,0.15);
+    }
+
+    .install-cmd .prompt { color: var(--dim); }
+    .install-cmd .copy-hint { font-size: 0.65rem; color: var(--dim); margin-left: 0.4rem; }
+
+    .install-copied { color: var(--lime) !important; }
+
+    /* ─── Discord mock ─── */
+    .discord-mock {
+      background: #1e1f22;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #2b2d31;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    }
+
+    .discord-layout {
+      display: flex;
+      height: 100%;
+    }
+
+    .discord-sidebar {
+      width: 140px;
+      flex-shrink: 0;
+      background: #2b2d31;
+      display: flex;
+      flex-direction: column;
+      padding: 0.6rem 0 0.6rem;
+      border-right: 1px solid #1e1f22;
+    }
+
+    .sidebar-server {
+      font-family: var(--display);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #e0e1e5;
+      padding: 0.4rem 0.75rem 0.6rem;
+      border-bottom: 1px solid #3a3c42;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-channels {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 0 0.4rem;
+    }
+
+    .sidebar-channel {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 0.3rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.68rem;
+      color: #80848e;
+      cursor: default;
+      transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-channel.active {
+      background: rgba(255,255,255,0.08);
+      color: #e0e1e5;
+    }
+
+    .sidebar-hash {
+      color: #5c5f66;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .sidebar-channel.active .sidebar-hash {
+      color: #9da3ab;
+    }
+
+    .discord-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .discord-header {
+      background: #1e1f22;
+      border-bottom: 1px solid #2b2d31;
+      padding: 0.7rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: #b5bac1;
+    }
+
+    .discord-header .hash { color: #5c5f66; font-size: 1rem; margin-right: 0.1rem; }
+    .discord-header .channel-name { font-weight: 600; color: #e0e1e5; }
+
+    .dc-system-msg {
+      padding: 0.4rem 1rem;
+      font-size: 0.68rem;
+      color: #5c5f66;
+      font-style: italic;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .dc-system-msg.visible { opacity: 1; }
+
+    .discord-body {
+      padding: 0.8rem 0;
+      height: 350px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow-y: auto;
+    }
+
+    .dc-msg {
+      display: flex;
+      gap: 0.8rem;
+      padding: 0.3rem 1rem;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .dc-msg.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .dc-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-top: 2px;
+      font-family: var(--display);
+    }
+
+    .dc-msg-body {}
+    .dc-msg-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2px;
+      flex-wrap: wrap;
+    }
+
+    .dc-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #e0e1e5;
+      font-family: var(--display);
+    }
+
+    .dc-role-chip {
+      font-size: 0.6rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+      transition: box-shadow 0.2s;
+      cursor: default;
+    }
+
+    .dc-role-chip:hover {
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .chip-orch { background: rgba(139,92,246,0.2); color: #8b5cf6; }
+    .chip-spec { background: rgba(6,182,212,0.15); color: #06b6d4; }
+    .chip-exec { background: rgba(163,230,53,0.12); color: #a3e635; }
+    .chip-human { background: rgba(148,163,184,0.15); color: #94a3b8; }
+
+    .dc-timestamp {
+      font-size: 0.62rem;
+      color: #5c5f66;
+      font-family: var(--mono);
+    }
+
+    .dc-text {
+      font-size: 0.82rem;
+      color: #dbdee1;
+      line-height: 1.5;
+      font-family: var(--mono);
+    }
+
+    .dc-text .mention {
+      color: #8b5cf6;
+      background: rgba(139,92,246,0.1);
+      border-radius: 3px;
+      padding: 0 2px;
+    }
+
+    .dc-text .code {
+      background: rgba(0,0,0,0.3);
+      border-radius: 3px;
+      padding: 0 4px;
+      font-size: 0.78rem;
+      color: #e3e5e8;
+    }
+
+    .dc-reactions {
+      display: flex;
+      gap: 0.3rem;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+
+    .dc-reaction {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-size: 0.72rem;
+      color: #b5bac1;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .dc-reaction.visible { opacity: 1; }
+
+    .dc-typing {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 1rem;
+      font-size: 0.72rem;
+      color: #5c5f66;
+      min-height: 26px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .dc-typing.visible { opacity: 1; }
+
+    .typing-dots {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+    }
+
+    .typing-dots span {
+      width: 5px; height: 5px;
+      background: #5c5f66;
+      border-radius: 50%;
+      animation: typingbounce 1.2s ease-in-out infinite;
+    }
+
+    .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes typingbounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-3px); opacity: 1; }
+    }
+
+    /* ─── Divider ─── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    /* ─── Claude Channels callout ─── */
+    .channels-callout {
+      border: 1px solid var(--violet);
+      border-radius: 14px;
+      background: rgba(139,92,246,0.07);
+      padding: 2rem 2.2rem;
+      display: flex;
+      gap: 1.6rem;
+      align-items: flex-start;
+    }
+
+    .channels-callout .callout-icon {
+      font-size: 1.8rem;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+
+    .channels-callout .callout-body {}
+
+    .channels-callout .callout-eyebrow {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--violet);
+      font-family: var(--mono);
+      margin-bottom: 0.4rem;
+    }
+
+    .channels-callout h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--bright);
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+    }
+
+    .channels-callout p {
+      font-size: 0.85rem;
+      color: var(--dim);
+      line-height: 1.6;
+      max-width: 540px;
+    }
+
+    .channels-callout .callout-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.9rem;
+    }
+
+    .channels-callout .callout-pill {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 20px;
+      border: 1px solid rgba(139,92,246,0.35);
+      color: var(--violet);
+      background: rgba(139,92,246,0.08);
+    }
+
+    @media (max-width: 640px) {
+      .channels-callout { flex-direction: column; gap: 0.8rem; }
+    }
+
+    /* ─── Section ─── */
+    .section {
+      padding: 5rem 0;
+    }
+
+    .section-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 0.6rem;
+    }
+
+    .section h2 {
+      font-family: var(--display);
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 800;
+      color: var(--bright);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 0.8rem;
+    }
+
+    .section .lead {
+      font-size: 0.88rem;
+      color: var(--text);
+      max-width: 480px;
+      margin-bottom: 2.5rem;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+    }
+
+    /* ─── Terminal ─── */
+    .terminal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: #0a0a0a;
+    }
+
+    .t-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .terminal-title {
+      font-size: 0.68rem;
+      color: var(--dim);
+      margin-left: auto;
+    }
+
+    .terminal-body {
+      padding: 1.2rem 1.4rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 2;
+      color: var(--dim);
+      overflow-x: auto;
+    }
+
+    .t-g { color: var(--lime); }
+    .t-c { color: var(--cyan); }
+    .t-y { color: var(--amber); }
+    .t-v { color: var(--violet); }
+    .t-w { color: var(--bright); }
+    .t-d { color: var(--dim); }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 1em;
+      background: var(--violet);
+      vertical-align: text-bottom;
+      animation: cursorblink 1s step-end infinite;
+    }
+
+    @keyframes cursorblink { 50% { opacity: 0; } }
+
+    /* ─── Feature rows ─── */
+    .feat-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .feat-row {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 1.3rem 1.6rem;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    .feat-row:last-child { border-bottom: none; }
+    .feat-row:hover { background: var(--surface); }
+
+    .feat-icon {
+      font-size: 1.4rem;
+      text-align: center;
+    }
+
+    .feat-name {
+      font-family: var(--display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--bright);
+      margin-bottom: 0.2rem;
+    }
+
+    .feat-desc {
+      font-size: 0.78rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .feat-tag {
+      font-size: 0.65rem;
+      font-family: var(--mono);
+      color: var(--dim);
+      white-space: nowrap;
+      text-align: right;
+      line-height: 1.5;
+    }
+
+    /* ─── Setup Flow ─── */
+    .setup-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+      margin-top: 3rem;
+    }
+
+    .setup-step {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+
+    .setup-step-num {
+      flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: var(--violet-dim);
+      color: var(--violet);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-top: 0.2rem;
+    }
+
+    .setup-step-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .setup-step-label {
+      font-family: var(--display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--bright);
+      margin-bottom: 0.8rem;
+    }
+
+    .setup-step-note {
+      font-size: 0.75rem;
+      color: var(--dim);
+      margin-top: 0.6rem;
+    }
+
+    /* Browser mockup */
+    .browser-mock {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .browser-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.6rem 0.9rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .browser-url {
+      margin-left: 0.8rem;
+      font-size: 0.65rem;
+      color: var(--dim);
+      background: var(--bg);
+      padding: 0.2rem 0.8rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      flex: 1;
+      max-width: 200px;
+    }
+
+    .browser-body {
+      display: flex;
+      min-height: 180px;
+    }
+
+    .mock-sidebar {
+      width: 100px;
+      padding: 0.7rem;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .mock-nav-item {
+      font-size: 0.5rem;
+      padding: 0.25rem 0.4rem;
+      border-radius: 4px;
+      color: var(--dim);
+      margin-bottom: 0.15rem;
+    }
+
+    .mock-nav-active {
+      background: rgba(139,92,246,0.1);
+      color: var(--violet);
+    }
+
+    .mock-main {
+      flex: 1;
+      padding: 0.8rem 1rem;
+    }
+
+    .mock-btn {
+      font-size: 0.45rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .mock-btn-accent {
+      background: rgba(139,92,246,0.15);
+      color: var(--violet);
+    }
+
+    .mock-btn-danger {
+      background: rgba(244,63,94,0.15);
+      color: var(--rose);
+    }
+
+    .mock-bot-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+    }
+
+    .mock-bot-card {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    .mock-bot-status {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .mock-status-on { background: #34d399; box-shadow: 0 0 4px #34d39966; }
+
+    .mock-bot-name {
+      font-size: 0.55rem;
+      font-weight: 500;
+      color: var(--bright);
+    }
+
+    .mock-bot-role {
+      font-size: 0.4rem;
+      padding: 0.05rem 0.3rem;
+      border-radius: 3px;
+      display: inline-block;
+      margin-top: 0.05rem;
+    }
+
+    .mock-role-orch { background: rgba(139,92,246,0.15); color: #a78bfa; }
+    .mock-role-exec { background: rgba(163,230,53,0.1); color: #a3e635; }
+    .mock-role-spec { background: rgba(6,182,212,0.1); color: #22d3ee; }
+
+    .mock-preset-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.35rem;
+    }
+
+    .mock-preset {
+      padding: 0.4rem 0.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    .mock-preset-active {
+      border-color: var(--violet);
+      background: rgba(139,92,246,0.05);
+    }
+
+    /* ─── Presets ─── */
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .preset-card {
+      background: var(--bg);
+      padding: 1.8rem;
+      transition: background 0.15s;
+    }
+
+    .preset-card:hover { background: var(--surface); }
+
+    .preset-accent {
+      width: 28px; height: 3px;
+      border-radius: 2px;
+      margin-bottom: 1rem;
+    }
+
+    .preset-name {
+      font-family: var(--display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--bright);
+      margin-bottom: 0.4rem;
+    }
+
+    .preset-bots {
+      font-size: 0.75rem;
+      color: var(--text);
+      margin-bottom: 0.7rem;
+      line-height: 1.5;
+    }
+
+    .preset-flow {
+      font-size: 0.7rem;
+      color: var(--dim);
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── Roles ─── */
+    .roles-section {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .role-col {}
+
+    .role-col-header {
+      margin-bottom: 1rem;
+    }
+
+    .role-col-title {
+      font-family: var(--display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--bright);
+      margin-bottom: 0.15rem;
+    }
+
+    .role-col-meta {
+      font-size: 0.65rem;
+      color: var(--dim);
+      letter-spacing: 0.04em;
+    }
+
+    .role-chips {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .role-chip {
+      font-size: 0.75rem;
+      padding: 0.45rem 0.8rem;
+      border-radius: 6px;
+      cursor: default;
+      transition: box-shadow 0.2s, transform 0.15s;
+      font-family: var(--mono);
+      border: 1px solid transparent;
+    }
+
+    .role-chip:hover {
+      transform: translateX(3px);
+    }
+
+    .rchip-v {
+      background: var(--violet-dim);
+      color: var(--violet);
+      border-color: rgba(139,92,246,0.2);
+    }
+    .rchip-v:hover { box-shadow: 0 0 14px rgba(139,92,246,0.3); }
+
+    .rchip-c {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      border-color: rgba(6,182,212,0.2);
+    }
+    .rchip-c:hover { box-shadow: 0 0 14px rgba(6,182,212,0.3); }
+
+    .rchip-l {
+      background: var(--lime-dim);
+      color: var(--lime);
+      border-color: rgba(163,230,53,0.15);
+    }
+    .rchip-l:hover { box-shadow: 0 0 14px rgba(163,230,53,0.25); }
+
+    /* ─── Why section ─── */
+    .why-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .why-statement {
+      font-family: var(--display);
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+      font-weight: 700;
+      color: var(--bright);
+      line-height: 1.2;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .why-statement .strike {
+      text-decoration: line-through;
+      color: var(--dim);
+    }
+
+    .why-statement .good { color: var(--lime); }
+
+    .why-body-text {
+      font-size: 0.82rem;
+      color: var(--text);
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+    }
+
+    .why-pillars {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .why-pillar {
+      padding: 1.3rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .why-pillar:last-child { border-bottom: none; }
+
+    .pillar-icon {
+      font-size: 1.2rem;
+      margin-top: 1px;
+      width: 1.8rem;
+      text-align: center;
+    }
+
+    .pillar-name {
+      font-family: var(--display);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--bright);
+      margin-bottom: 0.3rem;
+    }
+
+    .pillar-desc {
+      font-size: 0.78rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* ─── Counters ─── */
+    .counters {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 5rem;
+    }
+
+    .counter-cell {
+      background: var(--bg);
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+
+    .counter-val {
+      font-family: var(--display);
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--bright);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+      letter-spacing: -0.04em;
+    }
+
+    .counter-label {
+      font-size: 0.7rem;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ─── Get started ─── */
+    .get-started-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    .gs-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .gs-step {
+      display: grid;
+      grid-template-columns: 1.8rem 1fr;
+      gap: 0.8rem;
+      align-items: start;
+    }
+
+    .gs-num {
+      font-family: var(--display);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--violet);
+      background: var(--violet-dim);
+      border: 1px solid rgba(139,92,246,0.2);
+      border-radius: 50%;
+      width: 1.8rem;
+      height: 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .gs-step-title {
+      font-family: var(--display);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--bright);
+      margin-bottom: 0.3rem;
+    }
+
+    .gs-step-body {
+      font-size: 0.75rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .btn {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      padding: 0.6rem 1.3rem;
+      border-radius: 7px;
+      border: 1px solid var(--border-bright);
+      background: var(--surface);
+      color: var(--text);
+      text-decoration: none;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+    }
+
+    .btn:hover { color: var(--bright); border-color: var(--violet); text-decoration: none; }
+
+    .btn-primary {
+      background: var(--violet);
+      border-color: var(--violet);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+
+    /* ─── Footer ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--dim);
+    }
+
+    footer a { color: var(--dim); transition: color 0.15s; }
+    footer a:hover { color: var(--bright); text-decoration: none; }
+
+    .footer-dots { display: flex; gap: 0.8rem; align-items: center; }
+    .footer-sep { color: var(--border-bright); }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+        padding: 4rem 2rem 3rem;
+      }
+
+      .why-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .get-started-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .roles-section { grid-template-columns: 1fr; }
+      .counters { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ─── Interactive channel switcher ─── */
+    .sidebar-channel.clickable {
+      cursor: pointer;
+    }
+
+    .sidebar-channel.clickable:hover {
+      background: rgba(255,255,255,0.06);
+      color: #b5bac1;
+    }
+
+    .sidebar-channel.clickable.active:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    @media (max-width: 640px) {
+      .presets-grid { grid-template-columns: 1fr; }
+      .feat-row { grid-template-columns: 44px 1fr; }
+      .mock-sidebar { display: none; }
+      .mock-bot-grid { grid-template-columns: 1fr; }
+      .mock-preset-grid { grid-template-columns: 1fr; }
+      .feat-tag { display: none; }
+      .topbar-links { display: none; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+      .counters { grid-template-columns: repeat(2, 1fr); }
+      .discord-sidebar { width: 100px; }
+      .sidebar-server { font-size: 0.62rem; padding: 0.35rem 0.5rem 0.5rem; }
+      .sidebar-channel { font-size: 0.6rem; padding: 0.25rem 0.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero-bg"></div>
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-logo">disclaw<span>-team</span></div>
+    <div class="topbar-status">
+      <div class="pulse-dot"></div>
+      4 bots running
+    </div>
+    <nav class="topbar-links">
+      <a href="https://github.com/Magzter/disclaw-team">GitHub</a>
+      <a href="./docs/">Docs</a>
+      <a href="https://github.com/Magzter/disclaw-team/blob/main/LICENSE">MIT</a>
+    </nav>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">open source · built on Claude Code</div>
+      <h1>Your Discord server.<br><span class="hl-v">Now staffed.</span></h1>
+      <p class="hero-desc">Multiple Claude Code bots, distinct roles, independent sessions. Install, configure, launch.</p>
+      <div class="hero-ctas">
+        <a href="https://github.com/Magzter/disclaw-team" class="cta-primary">Clone on GitHub →</a>
+        <a href="./docs/" class="cta-secondary">Read the docs</a>
+      </div>
+      <div class="install-cmd" id="installCmd" onclick="copyInstall()">
+        <span class="prompt">$</span>
+        <span id="installText">npx disclaw-team init</span>
+        <span class="copy-hint" id="copyHint">click to copy</span>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="discord-mock">
+        <div class="discord-layout">
+          <!-- Sidebar -->
+          <div class="discord-sidebar">
+            <div class="sidebar-server">disclaw-team</div>
+            <div class="sidebar-channels">
+              <div class="sidebar-channel" id="ch-general">
+                <span class="sidebar-hash">#</span>
+                <span>general</span>
+              </div>
+              <div class="sidebar-channel" id="ch-task" style="display:none;opacity:0;transition:opacity 0.4s ease;">
+                <span class="sidebar-hash">#</span>
+                <span>task-market-entry</span>
+              </div>
+            </div>
+          </div>
+          <!-- Main chat area -->
+          <div class="discord-main">
+            <div class="discord-header" id="discordHeader">
+              <span class="hash">#</span>
+              <span class="channel-name" id="headerChannelName">general</span>
+            </div>
+            <div class="discord-body" id="discordFeed">
+              <!-- populated by JS -->
+            </div>
+            <div class="dc-typing" id="typingRow">
+              <div class="typing-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <span id="typingLabel"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Claude Channels callout -->
+  <div class="wrap-narrow" style="padding: 3rem 0 0;">
+    <div class="channels-callout">
+      <div class="callout-icon">⚡</div>
+      <div class="callout-body">
+        <div class="callout-eyebrow">How it runs</div>
+        <h3>Your Anthropic subscription. No API keys.</h3>
+        <p>disclaw-team runs on <strong style="color:var(--bright)">Claude Code channels</strong> — each bot is a full Claude Code session, not an API wrapper. You're using the same subscription you already have. No per-token billing, no API keys to manage, no usage surprises.</p>
+        <div class="callout-pills">
+          <span class="callout-pill">Claude Code channels</span>
+          <span class="callout-pill">Anthropic subscription</span>
+          <span class="callout-pill">No API keys</span>
+          <span class="callout-pill">No per-token billing</span>
+          <span class="callout-pill">Full Claude sessions</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- How it works -->
+  <section class="section">
+    <div class="wrap">
+      <h2 style="text-align:center;">How it works</h2>
+      <p class="lead" style="text-align:center;max-width:600px;margin-left:auto;margin-right:auto;">Install, open the dashboard, and configure everything from the browser.</p>
+
+      <div class="setup-flow">
+        <!-- Step 1: Install (terminal) -->
+        <div class="setup-step">
+          <div class="setup-step-num">1</div>
+          <div class="setup-step-content">
+            <div class="setup-step-label">Install and launch</div>
+            <div class="terminal" style="margin:0;">
+              <div class="terminal-bar">
+                <div class="t-dot" style="background:#ff5f57"></div>
+                <div class="t-dot" style="background:#febc2e"></div>
+                <div class="t-dot" style="background:#28c840"></div>
+                <div class="terminal-title">terminal</div>
+              </div>
+              <div class="terminal-body" style="line-height:1.8;padding:1.2rem 1.4rem;">
+<span class="t-d">$</span> <span class="t-g">npx disclaw-team init</span>
+<br><br>
+<span class="t-g">✓</span> <span class="t-d">disclaw-team installed</span>
+<br>
+<span class="t-g">✓</span> <span class="t-d">Dashboard running</span>
+<br><br>
+<span class="t-d">  Open</span>  <span class="t-v" style="text-decoration:underline;">http://localhost:5173</span>  <span class="t-d">to set up your team.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Onboarding UI (browser mockup) -->
+        <div class="setup-step">
+          <div class="setup-step-num">2</div>
+          <div class="setup-step-content">
+            <div class="setup-step-label">Configure in the browser</div>
+            <div class="browser-mock">
+              <div class="browser-bar">
+                <div class="t-dot" style="background:#ff5f57"></div>
+                <div class="t-dot" style="background:#febc2e"></div>
+                <div class="t-dot" style="background:#28c840"></div>
+                <div class="browser-url">localhost:5173/onboarding</div>
+              </div>
+              <div class="browser-body" style="flex-direction:column;">
+                <div class="mock-main" style="padding:1rem 1.2rem;">
+                  <div style="font-size:0.7rem;font-weight:600;color:var(--bright);font-family:var(--display);margin-bottom:0.15rem;">Set up your team</div>
+                  <div style="font-size:0.45rem;color:var(--dim);margin-bottom:0.8rem;">Step 3 of 4 — Assign roles</div>
+                  <!-- Progress bar -->
+                  <div style="height:3px;background:var(--border);border-radius:2px;margin-bottom:1rem;">
+                    <div style="height:100%;width:75%;background:var(--violet);border-radius:2px;"></div>
+                  </div>
+                  <!-- Role assignment cards -->
+                  <div style="display:flex;flex-direction:column;gap:0.35rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;">
+                      <div style="font-size:0.55rem;font-weight:500;color:var(--bright);">bot-1</div>
+                      <div style="font-size:0.45rem;padding:0.15rem 0.5rem;background:rgba(139,92,246,0.15);color:#a78bfa;border-radius:4px;">Tech Lead ▾</div>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;">
+                      <div style="font-size:0.55rem;font-weight:500;color:var(--bright);">bot-2</div>
+                      <div style="font-size:0.45rem;padding:0.15rem 0.5rem;background:rgba(163,230,53,0.1);color:#a3e635;border-radius:4px;">Frontend Dev ▾</div>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;">
+                      <div style="font-size:0.55rem;font-weight:500;color:var(--bright);">bot-3</div>
+                      <div style="font-size:0.45rem;padding:0.15rem 0.5rem;background:rgba(163,230,53,0.1);color:#a3e635;border-radius:4px;">Backend Dev ▾</div>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;">
+                      <div style="font-size:0.55rem;font-weight:500;color:var(--bright);">bot-4</div>
+                      <div style="font-size:0.45rem;padding:0.15rem 0.5rem;background:rgba(163,230,53,0.1);color:#a3e635;border-radius:4px;">QA Engineer ▾</div>
+                    </div>
+                  </div>
+                  <div style="margin-top:0.8rem;text-align:right;">
+                    <span style="font-size:0.5rem;padding:0.25rem 0.7rem;background:var(--violet);color:white;border-radius:5px;font-weight:500;">Launch Team →</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="setup-step-note">The onboarding wizard walks you through Discord setup, bot tokens, and role assignment.</p>
+          </div>
+        </div>
+
+        <!-- Step 3: Manage (browser mockup) -->
+        <div class="setup-step">
+          <div class="setup-step-num">3</div>
+          <div class="setup-step-content">
+            <div class="setup-step-label">Manage, swap roles, switch teams</div>
+            <div class="browser-mock">
+              <div class="browser-bar">
+                <div class="t-dot" style="background:#ff5f57"></div>
+                <div class="t-dot" style="background:#febc2e"></div>
+                <div class="t-dot" style="background:#28c840"></div>
+                <div class="browser-url">localhost:5173/teams</div>
+              </div>
+              <div class="browser-body">
+                <div class="mock-sidebar">
+                  <div style="font-size:0.65rem;font-weight:600;color:var(--bright);margin-bottom:0.8rem;font-family:var(--display);">disclaw-team</div>
+                  <div class="mock-nav-item">◉ Dashboard</div>
+                  <div class="mock-nav-item mock-nav-active">⚙ Teams</div>
+                  <div class="mock-nav-item">★ Roles</div>
+                  <div class="mock-nav-item">⏱ Schedules</div>
+                </div>
+                <div class="mock-main">
+                  <div style="font-size:0.7rem;font-weight:600;color:var(--bright);margin-bottom:0.6rem;font-family:var(--display);">Team Presets</div>
+                  <div class="mock-preset-grid">
+                    <div class="mock-preset" style="border-left:2px solid #6366f1;">
+                      <div style="font-size:0.6rem;font-weight:600;color:var(--bright);">👔 Executive</div>
+                      <div style="font-size:0.45rem;color:var(--dim);margin-top:0.15rem;">CEO · Researcher · Validator · Engineer</div>
+                    </div>
+                    <div class="mock-preset mock-preset-active" style="border-left:2px solid #34d399;">
+                      <div style="font-size:0.6rem;font-weight:600;color:var(--bright);">💻 Dev Team <span style="font-size:0.4rem;background:rgba(99,102,241,0.15);color:#818cf8;padding:0.1rem 0.3rem;border-radius:3px;margin-left:0.2rem;">active</span></div>
+                      <div style="font-size:0.45rem;color:var(--dim);margin-top:0.15rem;">Tech Lead · Frontend · Backend · QA</div>
+                    </div>
+                    <div class="mock-preset" style="border-left:2px solid #22d3ee;">
+                      <div style="font-size:0.6rem;font-weight:600;color:var(--bright);">🎨 Frontend</div>
+                      <div style="font-size:0.45rem;color:var(--dim);margin-top:0.15rem;">Creative Dir · UI Designer · Dev · Reviewer</div>
+                    </div>
+                    <div class="mock-preset" style="border-left:2px solid #a78bfa;">
+                      <div style="font-size:0.6rem;font-weight:600;color:var(--bright);">📦 Product</div>
+                      <div style="font-size:0.45rem;color:var(--dim);margin-top:0.15rem;">PM · UX Researcher · Dev · Copywriter</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Counters -->
+  <div class="wrap-narrow" style="padding-top:5rem;">
+    <div class="counters" id="counters">
+      <div class="counter-cell">
+        <div class="counter-val" data-target="22">0</div>
+        <div class="counter-label">Built-in Roles</div>
+      </div>
+      <div class="counter-cell">
+        <div class="counter-val" data-target="6">0</div>
+        <div class="counter-label">Team Presets</div>
+      </div>
+      <div class="counter-cell">
+        <div class="counter-val" data-target="3">0</div>
+        <div class="counter-label">Role Tiers</div>
+      </div>
+      <div class="counter-cell">
+        <div class="counter-val" data-target="1">0</div>
+        <div class="counter-label">Command to Deploy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section class="section">
+    <div class="wrap-narrow">
+      <h2>The full toolkit.</h2>
+      <p class="lead">Everything you need to run a real AI operations team — not a chatbot.</p>
+
+      <div class="feat-rows">
+        <div class="feat-row">
+          <div class="feat-icon">🎭</div>
+          <div>
+            <div class="feat-name">22 Swappable Roles</div>
+            <div class="feat-desc">Orchestrators, specialists, executors. Assign any role to any bot. Swap anytime — roles are a library, not locked in.</div>
+          </div>
+          <div class="feat-tag">role library</div>
+        </div>
+        <div class="feat-row">
+          <div class="feat-icon">🌐</div>
+          <div>
+            <div class="feat-name">Web Dashboard</div>
+            <div class="feat-desc">Live status, role picker, onboarding wizard, schedules, per-bot profiles, and role editor. All visual.</div>
+          </div>
+          <div class="feat-tag">localhost:5173</div>
+        </div>
+        <div class="feat-row">
+          <div class="feat-icon">💬</div>
+          <div>
+            <div class="feat-name">Task Channels</div>
+            <div class="feat-desc">Orchestrator creates Discord channels per task. All discourse lives there. Summaries surface back to general.</div>
+          </div>
+          <div class="feat-tag">per-task threads</div>
+        </div>
+        <div class="feat-row">
+          <div class="feat-icon">🔐</div>
+          <div>
+            <div class="feat-name">Permission System</div>
+            <div class="feat-desc">Safe mode sends approval requests to your Discord DMs. Approve once, always allow, or deny. The system learns.</div>
+          </div>
+          <div class="feat-tag">human-in-loop</div>
+        </div>
+        <div class="feat-row">
+          <div class="feat-icon">⏱</div>
+          <div>
+            <div class="feat-name">Schedules</div>
+            <div class="feat-desc">Recurring tasks via cron with a visual builder. Prompts injected directly into bot sessions on trigger.</div>
+          </div>
+          <div class="feat-tag">cron + visual</div>
+        </div>
+        <div class="feat-row">
+          <div class="feat-icon">🧠</div>
+          <div>
+            <div class="feat-name">Model Per Role</div>
+            <div class="feat-desc">Opus for strategic orchestration, Sonnet for depth, Haiku for speed. Reasoning effort configurable per role.</div>
+          </div>
+          <div class="feat-tag">multi-model</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Presets -->
+  <section class="section">
+    <div class="wrap-narrow">
+      <h2>Pre-built team presets.</h2>
+      <p class="lead">Pick a preset and your bots get roles instantly. Six ready-to-run compositions, or define your own.</p>
+
+      <div class="presets-grid">
+        <div class="preset-card">
+          <div class="preset-accent" style="background:var(--violet)"></div>
+          <div class="preset-name">Executive</div>
+          <div class="preset-bots">CEO · Researcher · Validator · Engineer</div>
+          <div class="preset-flow">research → validate → present</div>
+        </div>
+        <div class="preset-card">
+          <div class="preset-accent" style="background:var(--lime)"></div>
+          <div class="preset-name">Dev Team</div>
+          <div class="preset-bots">Tech Lead · Frontend Dev · Backend Dev · QA</div>
+          <div class="preset-flow">architect → build → review</div>
+        </div>
+        <div class="preset-card">
+          <div class="preset-accent" style="background:var(--cyan)"></div>
+          <div class="preset-name">Frontend</div>
+          <div class="preset-bots">Creative Director · UI Designer · Frontend Dev · Reviewer</div>
+          <div class="preset-flow">design → implement → review</div>
+        </div>
+        <div class="preset-card">
+          <div class="preset-accent" style="background:var(--rose)"></div>
+          <div class="preset-name">Product</div>
+          <div class="preset-bots">Product Manager · UX Researcher · Frontend Dev · Copywriter</div>
+          <div class="preset-flow">analyze → design → write</div>
+        </div>
+        <div class="preset-card">
+          <div class="preset-accent" style="background:var(--amber)"></div>
+          <div class="preset-name">Content</div>
+          <div class="preset-bots">Editor-in-Chief · Writer · Researcher · SEO</div>
+          <div class="preset-flow">research → write → verify</div>
+        </div>
+        <div class="preset-card">
+          <div class="preset-accent" style="background:var(--cyan)"></div>
+          <div class="preset-name">Research</div>
+          <div class="preset-bots">Lead · 2× Researcher · Data Analyst · Reviewer</div>
+          <div class="preset-flow">investigate → analyze → peer-review</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Role Library -->
+  <section class="section">
+    <div class="wrap-narrow">
+      <h2>22 roles, fully configurable.</h2>
+      <p class="lead">Each role defines personality, instructions, engagement rules, and model config. Edit or create your own via the web dashboard or YAML.</p>
+
+      <div class="roles-section">
+        <div class="role-col">
+          <div class="role-col-header">
+            <div class="role-col-title">Orchestrators</div>
+            <div class="role-col-meta">opus · thinking/high</div>
+          </div>
+          <div class="role-chips">
+            <div class="role-chip rchip-v">CEO</div>
+            <div class="role-chip rchip-v">Tech Lead</div>
+            <div class="role-chip rchip-v">Editor-in-Chief</div>
+            <div class="role-chip rchip-v">Creative Director</div>
+            <div class="role-chip rchip-v">Product Manager</div>
+            <div class="role-chip rchip-v">Project Manager</div>
+          </div>
+        </div>
+
+        <div class="role-col">
+          <div class="role-col-header">
+            <div class="role-col-title">Specialists</div>
+            <div class="role-col-meta">sonnet · thinking/high</div>
+          </div>
+          <div class="role-chips">
+            <div class="role-chip rchip-c">Researcher</div>
+            <div class="role-chip rchip-c">Validator</div>
+            <div class="role-chip rchip-c">Data Analyst</div>
+            <div class="role-chip rchip-c">Code Reviewer</div>
+            <div class="role-chip rchip-c">Competitive Analyst</div>
+            <div class="role-chip rchip-c">Security Advisor</div>
+            <div class="role-chip rchip-c">SEO Specialist</div>
+            <div class="role-chip rchip-c">UI Designer</div>
+            <div class="role-chip rchip-c">UX Researcher</div>
+          </div>
+        </div>
+
+        <div class="role-col">
+          <div class="role-col-header">
+            <div class="role-col-title">Executors</div>
+            <div class="role-col-meta">sonnet · standard/medium</div>
+          </div>
+          <div class="role-chips">
+            <div class="role-chip rchip-l">Software Engineer</div>
+            <div class="role-chip rchip-l">Frontend Dev</div>
+            <div class="role-chip rchip-l">Backend Dev</div>
+            <div class="role-chip rchip-l">Content Writer</div>
+            <div class="role-chip rchip-l">QA Engineer</div>
+            <div class="role-chip rchip-l">DevOps</div>
+            <div class="role-chip rchip-l">Copywriter</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Why separate sessions -->
+  <section class="section">
+    <div class="wrap-narrow">
+      <div class="why-layout">
+        <div>
+          <div class="why-statement">
+            <span class="strike">One agent,<br>many masks.</span><br>
+            <span class="good">Real agents.<br>Real discord.</span>
+          </div>
+          <p class="why-body-text">A single-session approach was explored and rejected. It collapses into one mind performing disagreement. Separate sessions mean each bot builds its own context, forms its own views, and can genuinely push back.</p>
+          <p class="why-body-text">The orchestrator delegates via Discord @mentions — never spawns subagents for specialist work. Specialists spawn their own subagents for deep work. The architecture mirrors how real teams operate.</p>
+        </div>
+
+        <div class="why-pillars">
+          <div class="why-pillar">
+            <div class="pillar-icon">⚡</div>
+            <div>
+              <div class="pillar-name">Independent</div>
+              <div class="pillar-desc">Each bot reasons on its own with separate context. A researcher can genuinely disagree with the orchestrator — not perform disagreement.</div>
+            </div>
+          </div>
+          <div class="why-pillar">
+            <div class="pillar-icon">⚙️</div>
+            <div>
+              <div class="pillar-name">Parallel</div>
+              <div class="pillar-desc">All bots run simultaneously. No blocking, no queuing. The orchestrator delegates and moves on while specialists work in parallel.</div>
+            </div>
+          </div>
+          <div class="why-pillar">
+            <div class="pillar-icon">👁</div>
+            <div>
+              <div class="pillar-name">Visible</div>
+              <div class="pillar-desc">All discourse happens in Discord. Every decision, every pushback, every revision. Humans watch, interject, and redirect in real time.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- CTA -->
+  <section class="section" style="text-align:center;">
+    <div class="wrap-narrow">
+      <h2>Ready to staff your server?</h2>
+      <p class="lead" style="margin-bottom:2rem;">Open source. MIT licensed. One command to deploy.</p>
+      <div class="install-cmd" id="installCmd2" onclick="copyInstall()" style="max-width:340px;margin:0 auto 2rem;">
+        <span class="prompt">$</span>
+        <span>npx disclaw-team init</span>
+        <span class="copy-hint">click to copy</span>
+      </div>
+      <div class="btn-row" style="justify-content:center;">
+        <a href="https://github.com/Magzter/disclaw-team" class="btn btn-primary">GitHub →</a>
+        <a href="./docs/" class="btn">Documentation →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-dots">
+      <span>MIT License</span>
+      <span class="footer-sep">·</span>
+      <a href="https://github.com/Magzter/disclaw-team">GitHub</a>
+      <span class="footer-sep">·</span>
+      <span>Built with <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a></span>
+    </div>
+    <div style="color:var(--dim);">disclaw-team · open source</div>
+  </footer>
+
+  <script>
+    // ─── Copy install command ───
+    function copyInstall() {
+      const cmd = 'npx disclaw-team init';
+      navigator.clipboard.writeText(cmd).then(() => {
+        const hint = document.getElementById('copyHint');
+        hint.textContent = 'copied!';
+        hint.classList.add('install-copied');
+        setTimeout(() => {
+          hint.textContent = 'click to copy';
+          hint.classList.remove('install-copied');
+        }, 2000);
+      });
+    }
+
+    // ─── Discord conversation animation ───
+    // Scene 1: #general
+    const SCENE1 = [
+      {
+        id: 'g1',
+        avatar: 'S',
+        avatarBg: '#374151',
+        avatarColor: '#e5e7eb',
+        name: 'Sarah',
+        isHuman: true,
+        role: 'human',
+        chipClass: 'chip-human',
+        time: 'Today at 9:32 AM',
+        text: 'We need to evaluate entering the Japanese market by end of week. Can you run a full analysis?',
+        reaction: null,
+        reactionOn: null,
+      },
+      {
+        id: 'react-g1-eyes',
+        type: 'reaction',
+        targetId: 'g1',
+        emoji: '👀',
+        name: 'Team Lead',
+      },
+      {
+        id: 'g2',
+        avatar: 'TL',
+        avatarBg: '#4c1d95',
+        avatarColor: '#a78bfa',
+        name: 'Team Lead',
+        isHuman: false,
+        role: 'orchestrator',
+        chipClass: 'chip-orch',
+        time: 'Today at 9:33 AM',
+        text: 'On it. Spinning up <span class="mention">#task-market-entry</span>',
+        reaction: null,
+      },
+    ];
+
+    // Scene 2: #task-market-entry
+    const SCENE2 = [
+      {
+        id: 't1',
+        type: 'system',
+        text: 'Team Lead created #task-market-entry',
+      },
+      {
+        id: 't2',
+        avatar: 'TL',
+        avatarBg: '#4c1d95',
+        avatarColor: '#a78bfa',
+        name: 'Team Lead',
+        isHuman: false,
+        role: 'orchestrator',
+        chipClass: 'chip-orch',
+        time: 'Today at 9:33 AM',
+        text: 'Japan market entry — breaking this into three workstreams:<br><br>1. <span class="mention">@Researcher</span> — competitive landscape, regulatory environment, distribution channels<br>2. <span class="mention">@Analyst</span> — TAM sizing, revenue model, unit economics<br>3. <span class="mention">@Validator</span> — cross-check all findings before we present<br><br>Target: validated report by Thursday.',
+      },
+      {
+        id: 't3',
+        avatar: 'RS',
+        avatarBg: '#0c4a6e',
+        avatarColor: '#38bdf8',
+        name: 'Researcher',
+        isHuman: false,
+        role: 'specialist',
+        chipClass: 'chip-spec',
+        time: 'Today at 9:35 AM',
+        text: 'On it. Identified three established competitors — pulling their pricing, market share, and go-to-market strategies now. Flagging early: Japan has specific data residency requirements.',
+      },
+      {
+        id: 't4',
+        avatar: 'DA',
+        avatarBg: '#14532d',
+        avatarColor: '#86efac',
+        name: 'Analyst',
+        isHuman: false,
+        role: 'specialist',
+        chipClass: 'chip-spec',
+        time: 'Today at 9:36 AM',
+        text: 'Quick scoping question — are we modeling B2B enterprise or B2C? Changes the TAM by an order of magnitude.',
+      },
+      {
+        id: 't5',
+        avatar: 'J',
+        avatarBg: '#78350f',
+        avatarColor: '#fbbf24',
+        name: 'James',
+        isHuman: true,
+        role: 'human',
+        chipClass: 'chip-human',
+        time: 'Today at 9:37 AM',
+        text: 'B2B enterprise first. We can expand to mid-market in phase two.',
+      },
+      {
+        id: 't6',
+        avatar: 'TL',
+        avatarBg: '#4c1d95',
+        avatarColor: '#a78bfa',
+        name: 'Team Lead',
+        isHuman: false,
+        role: 'orchestrator',
+        chipClass: 'chip-orch',
+        time: 'Today at 9:37 AM',
+        text: '<span class="mention">@Analyst</span> scope to B2B enterprise SaaS. <span class="mention">@Researcher</span> factor that into the competitive analysis — filter for enterprise players only.',
+      },
+      {
+        id: 't7',
+        avatar: 'RS',
+        avatarBg: '#0c4a6e',
+        avatarColor: '#38bdf8',
+        name: 'Researcher',
+        isHuman: false,
+        role: 'specialist',
+        chipClass: 'chip-spec',
+        time: 'Today at 9:44 AM',
+        text: 'Competitive report done. Sending to <span class="mention">@Validator</span> — three key findings around pricing gaps and a regulatory flag.',
+      },
+      {
+        id: 't8',
+        avatar: 'VA',
+        avatarBg: '#831843',
+        avatarColor: '#f472b6',
+        name: 'Validator',
+        isHuman: false,
+        role: 'specialist',
+        chipClass: 'chip-spec',
+        time: 'Today at 9:47 AM',
+        text: 'Verified. One correction: the data residency law was updated in 2025, requirements are lighter than the report initially suggested. Competitor pricing checks out. Approved with the amendment.',
+        reactions: [{ emoji: '✅', count: 1 }],
+      },
+      {
+        id: 't9',
+        avatar: 'TL',
+        avatarBg: '#4c1d95',
+        avatarColor: '#a78bfa',
+        name: 'Team Lead',
+        isHuman: false,
+        role: 'orchestrator',
+        chipClass: 'chip-orch',
+        time: 'Today at 9:48 AM',
+        text: 'Both workstreams validated. Compiling the final report now — posting summary to general.',
+        reactions: [{ emoji: '👍', count: 2 }],
+      },
+    ];
+
+    // Scene 3: back to #general with summary
+    const SCENE3 = [
+      {
+        id: 'g3',
+        avatar: 'TL',
+        avatarBg: '#4c1d95',
+        avatarColor: '#a78bfa',
+        name: 'Team Lead',
+        isHuman: false,
+        role: 'orchestrator',
+        chipClass: 'chip-orch',
+        time: 'Today at 9:52 AM',
+        text: '<span class="mention">@Sarah</span> <span class="mention">@James</span> — Japan analysis done. $2.4B TAM, three competitors, clear regulatory path. Recommend partner-led entry at 1.3× US pricing. Full report in the thread.',
+        reactions: [{ emoji: '🚀', count: 2 }],
+      },
+    ];
+
+    const feed = document.getElementById('discordFeed');
+    const typingRow = document.getElementById('typingRow');
+    const typingLabel = document.getElementById('typingLabel');
+    const headerChannelName = document.getElementById('headerChannelName');
+    const chGeneral = document.getElementById('ch-general');
+    const chTask = document.getElementById('ch-task');
+
+    // ─── Channel switcher state ───
+    let animationDone = false;
+    let scene1HTML = '';
+    let scene2HTML = '';
+
+    function switchToGeneral() {
+      if (!animationDone) return;
+      feed.innerHTML = scene1HTML;
+      feed.scrollTop = feed.scrollHeight;
+      headerChannelName.textContent = 'general';
+      chGeneral.classList.add('active');
+      chTask.classList.remove('active');
+    }
+
+    function switchToTask() {
+      if (!animationDone) return;
+      feed.innerHTML = scene2HTML;
+      feed.scrollTop = feed.scrollHeight;
+      headerChannelName.textContent = 'task-market-entry';
+      chTask.classList.add('active');
+      chGeneral.classList.remove('active');
+    }
+
+    chGeneral.addEventListener('click', switchToGeneral);
+    chTask.addEventListener('click', switchToTask);
+
+    // SAFETY: text is rendered via innerHTML. This is safe because all content is
+    // hardcoded in this file and never user-supplied or fetched from an API.
+    function makeMsg(msg) {
+      if (msg.type === 'system') {
+        const el = document.createElement('div');
+        el.className = 'dc-system-msg';
+        el.id = msg.id;
+        el.textContent = msg.text;
+        return el;
+      }
+      const el = document.createElement('div');
+      el.className = 'dc-msg';
+      el.id = msg.id;
+      const roleChip = msg.role
+        ? `<span class="dc-role-chip ${msg.chipClass}">${msg.role}</span>`
+        : '';
+      const reactionsHtml = msg.reactions
+        ? `<div class="dc-reactions" id="react-${msg.id}">${msg.reactions.map(r => `<span class="dc-reaction">${r.emoji} <span>${r.count}</span></span>`).join('')}</div>`
+        : '';
+      el.innerHTML = `
+        <div class="dc-avatar" style="background:${msg.avatarBg};color:${msg.avatarColor}">${msg.avatar}</div>
+        <div class="dc-msg-body">
+          <div class="dc-msg-header">
+            <span class="dc-name">${msg.name}</span>
+            ${roleChip}
+            <span class="dc-timestamp">${msg.time}</span>
+          </div>
+          <div class="dc-text">${msg.text}</div>
+          ${reactionsHtml}
+        </div>
+      `;
+      return el;
+    }
+
+    function showTyping(name) {
+      if (name) {
+        typingLabel.textContent = name + ' is typing...';
+        typingRow.classList.add('visible');
+      } else {
+        typingRow.classList.remove('visible');
+      }
+    }
+
+    function showReactions(msgId) {
+      const reactDiv = document.getElementById('react-' + msgId);
+      if (!reactDiv) return;
+      const chips = reactDiv.querySelectorAll('.dc-reaction');
+      chips.forEach((chip, i) => {
+        setTimeout(() => chip.classList.add('visible'), i * 250);
+      });
+    }
+
+    function addReactionToMsg(targetId, emoji) {
+      const targetEl = document.getElementById(targetId);
+      if (!targetEl) return;
+      let reactDiv = targetEl.querySelector('.dc-reactions');
+      if (!reactDiv) {
+        reactDiv = document.createElement('div');
+        reactDiv.className = 'dc-reactions';
+        targetEl.querySelector('.dc-msg-body').appendChild(reactDiv);
+      }
+      const chip = document.createElement('span');
+      chip.className = 'dc-reaction';
+      chip.innerHTML = `${emoji} <span>1</span>`;
+      reactDiv.appendChild(chip);
+      requestAnimationFrame(() => requestAnimationFrame(() => chip.classList.add('visible')));
+    }
+
+    function appendMsg(msg, cb) {
+      const el = makeMsg(msg);
+      feed.appendChild(el);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        el.classList.add('visible');
+        feed.scrollTop = feed.scrollHeight;
+      }));
+      const delay = msg.reactions ? 600 : 0;
+      setTimeout(() => {
+        if (msg.reactions) showReactions(msg.id);
+        if (cb) cb();
+      }, 500 + delay);
+    }
+
+    function delay(ms, fn) { setTimeout(fn, ms); }
+
+    function runScene1(onDone) {
+      // Set sidebar active channel to general
+      chGeneral.classList.add('active');
+      chTask.classList.remove('active');
+      headerChannelName.textContent = 'general';
+
+      // Step 1: Sarah types + sends
+      showTyping('Sarah');
+      delay(1800, () => {
+        showTyping(null);
+        appendMsg(SCENE1[0], () => {
+          // Step 2: Team Lead reacts 👀
+          delay(1000, () => {
+            addReactionToMsg('g1', '👀');
+            // Step 3: Team Lead types + sends
+            delay(1200, () => {
+              showTyping('Team Lead');
+              delay(1800, () => {
+                showTyping(null);
+                appendMsg(SCENE1[2], () => {
+                  // Snapshot scene 1 before transition
+                  scene1HTML = feed.innerHTML;
+                  // Transition to scene 2
+                  delay(1200, onDone);
+                });
+              });
+            });
+          });
+        });
+      });
+    }
+
+    function transitionToTask(onDone) {
+      // Reveal #task-market-entry channel in sidebar
+      chTask.style.display = 'flex';
+      requestAnimationFrame(() => requestAnimationFrame(() => { chTask.style.opacity = '1'; }));
+      // Switch sidebar active
+      chGeneral.classList.remove('active');
+      chTask.classList.add('active');
+      // Fade out feed
+      feed.style.transition = 'opacity 0.35s';
+      feed.style.opacity = '0';
+      delay(350, () => {
+        feed.innerHTML = '';
+        feed.style.opacity = '1';
+        feed.style.transition = '';
+        headerChannelName.textContent = 'task-market-entry';
+        onDone();
+      });
+    }
+
+    // Helper: chain messages sequentially with typing indicators
+    function chainMessages(messages, typingNames, onDone) {
+      let i = 0;
+      function next() {
+        if (i >= messages.length) { if (onDone) onDone(); return; }
+        const msg = messages[i];
+        const typer = typingNames[i];
+        const typeDuration = Math.min(2200, 800 + (msg.text || '').length * 4);
+        i++;
+        if (msg.type === 'system') {
+          const sysEl = makeMsg(msg);
+          feed.appendChild(sysEl);
+          feed.scrollTop = feed.scrollHeight;
+          delay(200, () => { sysEl.classList.add('visible'); delay(600, next); });
+        } else if (typer) {
+          delay(800, () => {
+            showTyping(typer);
+            delay(typeDuration, () => {
+              showTyping(null);
+              appendMsg(msg, () => delay(400, next));
+            });
+          });
+        } else {
+          delay(600, () => appendMsg(msg, () => delay(400, next)));
+        }
+      }
+      next();
+    }
+
+    function runScene2(onDone) {
+      chainMessages(
+        SCENE2,
+        [null, 'Team Lead', 'Researcher', 'Analyst', 'James', 'Team Lead', 'Researcher', 'Validator', 'Team Lead'],
+        onDone
+      );
+    }
+
+    function transitionToGeneral(onDone) {
+      chGeneral.classList.add('active');
+      chTask.classList.remove('active');
+      feed.style.transition = 'opacity 0.35s';
+      feed.style.opacity = '0';
+      delay(350, () => {
+        feed.innerHTML = scene1HTML;
+        feed.style.opacity = '1';
+        feed.style.transition = '';
+        headerChannelName.textContent = 'general';
+        feed.scrollTop = feed.scrollHeight;
+        onDone();
+      });
+    }
+
+    function runScene3(onDone) {
+      chainMessages(
+        SCENE3,
+        ['Team Lead'],
+        onDone
+      );
+    }
+
+    // Start animation after short delay — runs ONCE, no loop
+    delay(800, () => {
+      runScene1(() => {
+        transitionToTask(() => {
+          runScene2(() => {
+            // Snapshot scene 2
+            scene2HTML = feed.innerHTML;
+            // Return to general with summary
+            delay(1200, () => {
+              transitionToGeneral(() => {
+                runScene3(() => {
+                  // Snapshot final general state and enable switching
+                  scene1HTML = feed.innerHTML;
+                  animationDone = true;
+                  chGeneral.classList.add('clickable');
+                  chTask.classList.add('clickable');
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+    // ─── Counter animation ───
+    function animateCounters() {
+      const cells = document.querySelectorAll('.counter-val[data-target]');
+      cells.forEach(cell => {
+        const target = parseInt(cell.dataset.target);
+        const duration = 1200;
+        const start = performance.now();
+        function step(now) {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          cell.textContent = Math.round(eased * target);
+          if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+    }
+
+    const counterObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          animateCounters();
+          counterObs.disconnect();
+        }
+      });
+    }, { threshold: 0.4 });
+
+    const counterEl = document.getElementById('counters');
+    if (counterEl) counterObs.observe(counterEl);
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,70 @@
+---
+title: Prerequisites
+description: What you need installed before setting up disclaw-team.
+---
+
+disclaw-team requires three things before you install. Get these in place first — the rest of setup assumes they're all working.
+
+## Node.js
+
+Node.js 18 or higher is required. This is used to run the CLI and MCP server.
+
+**Install via nvm (recommended):**
+```bash
+nvm install --lts
+```
+
+**Verify:**
+```bash
+node --version
+```
+
+:::tip[Bun works too]
+If you have [Bun](https://bun.sh) installed, disclaw-team will automatically use it for better performance. But it's not required — Node.js works fine.
+:::
+
+## tmux
+
+disclaw-team uses tmux to run each bot as a background process in its own window. Version 3.0 or higher is required.
+
+**macOS:**
+```bash
+brew install tmux
+```
+
+**Ubuntu / Debian:**
+```bash
+sudo apt install tmux
+```
+
+**Fedora / RHEL:**
+```bash
+sudo dnf install tmux
+```
+
+**Verify:**
+```bash
+tmux -V
+```
+
+## Claude Code
+
+Each bot runs as a Claude Code session. Claude Code must be installed globally and you need an active Claude subscription.
+
+**Install:**
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+**Verify:**
+```bash
+claude --version
+```
+
+:::note[Claude Pro subscription]
+disclaw-team runs through your existing Claude Pro subscription (or higher). No API keys or per-token billing. Each bot counts as one concurrent Claude Code session.
+:::
+
+## Next step
+
+Once all three are installed and verified, continue to [Discord Setup](./discord-setup) to create your bot tokens.

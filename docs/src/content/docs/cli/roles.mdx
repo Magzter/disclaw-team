@@ -1,0 +1,61 @@
+---
+title: disclaw-team roles
+description: Manage roles — list, inspect, and install preloaded role definitions.
+---
+
+## Synopsis
+
+```bash
+disclaw-team roles <subcommand>
+```
+
+## Description
+
+Manage the role library at `~/.disclaw-team/roles/`. List installed roles, inspect role details, or install the preloaded role set that ships with disclaw-team.
+
+## Subcommands
+
+### `disclaw-team roles list`
+
+List all installed roles grouped by type (orchestrator, specialist, executor, generalist). Shows each role's ID and tagline.
+
+### `disclaw-team roles show <role-id>`
+
+Display full details for a single role: type, description, personality, engagement rules, and model config.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `role-id` | Yes | Role filename without `.yaml` extension (e.g., `researcher`) |
+
+### `disclaw-team roles install`
+
+Copy preloaded roles from the disclaw-team source into `~/.disclaw-team/roles/`. Run once after cloning, or again to pick up newly bundled roles.
+
+## Examples
+
+```bash
+# List all installed roles
+disclaw-team roles list
+```
+
+```bash
+# Inspect a specific role
+disclaw-team roles show tech-lead
+```
+
+```bash
+# Install preloaded roles
+disclaw-team roles install
+```
+
+```bash
+# Update an existing role (must delete first)
+rm ~/.disclaw-team/roles/researcher.yaml
+disclaw-team roles install
+```
+
+## Gotchas
+
+:::caution[Install never overwrites]
+`roles install` will not overwrite existing role files. To get an updated version of a preloaded role, delete the old file first, then re-run `roles install`.
+:::

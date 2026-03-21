@@ -1,0 +1,54 @@
+{
+  "name": "disclaw-team",
+  "version": "0.1.0",
+  "description": "Deploy a team of AI assistants to your Discord server — each with its own personality, role, and specialization",
+  "type": "module",
+  "bin": {
+    "disclaw-team": "./dist/cli/index.js"
+  },
+  "files": [
+    "dist",
+    "src/roles",
+    "src/templates"
+  ],
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "dev": "bun run src/cli/index.ts",
+    "typecheck": "bunx tsc --noEmit",
+    "prepublishOnly": "bun run build",
+    "test": "bun test"
+  },
+  "keywords": [
+    "discord",
+    "ai",
+    "bot",
+    "claude",
+    "mcp",
+    "multi-agent",
+    "team",
+    "automation",
+    "claude-code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Magzter/disclaw-team"
+  },
+  "homepage": "https://github.com/Magzter/disclaw-team#readme",
+  "bugs": {
+    "url": "https://github.com/Magzter/disclaw-team/issues"
+  },
+  "author": "Matt Magliolo (https://github.com/Magzter)",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "discord.js": "^14.14.0",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

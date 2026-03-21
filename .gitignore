@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+*.env
+.disclaw-team/bots/
+*.pid
+.DS_Store
+.claude/settings.local.json
+web/.claude/settings.local.json
