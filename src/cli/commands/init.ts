@@ -51,7 +51,6 @@ export async function init(args: string[]) {
       // No dashboard available — fall through to terminal setup
       console.log('\n  Web dashboard not available. Continuing with terminal setup.\n')
     } else {
-      rl.close()
       console.log('\n  Starting dashboard...\n')
 
       // Run dashboard as a child process (no tmux needed for onboarding)
@@ -73,6 +72,7 @@ export async function init(args: string[]) {
       } catch {}
 
       if (dashboardUp) {
+        rl.close()
         console.log(`  Dashboard:  http://localhost:${dashboard.port}/onboarding`)
         console.log(`  Complete the setup wizard in your browser.`)
         console.log(`  Press Ctrl+C when done.\n`)
