@@ -349,16 +349,17 @@ export async function start(args: string[]) {
     try {
       execSync(serverCmd, { stdio: 'pipe', timeout: 10000, shell: '/bin/sh' })
     } catch (err) {
-      const e = err as { stderr?: Buffer; killed?: boolean }
+      const e = err as { stderr?: Buffer; killed?: boolean; status?: number | null }
       const stderr = e.stderr?.toString() || ''
       if (e.killed) {
-        // Timeout = server started successfully (connected to Discord, waiting for MCP messages)
+        // Timeout = server stayed alive (connected to Discord, waiting for MCP messages)
         continue
       }
-      if (stderr.includes('disclaw-team:')) {
+      if (e.status !== 0 && (stderr.includes('login failed') || stderr.includes('TOKEN') || stderr.includes('intents'))) {
         console.error(`\n  ${botId}: ${stderr.trim().split('\n').join('\n  ')}`)
         preflightFailed = true
       }
+      // Any other exit (including successful connection + clean shutdown) is fine
     }
   }
   if (preflightFailed) {
