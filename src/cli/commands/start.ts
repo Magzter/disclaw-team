@@ -51,35 +51,76 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-/** Send keystrokes to auto-confirm Claude Code startup prompts in tmux */
+/** Read the current tmux pane content for a window */
+function readPane(windowName: string): string {
+  try {
+    return execSync(`tmux capture-pane -t ${TMUX_SESSION}:${windowName} -p`, { stdio: 'pipe' }).toString()
+  } catch { return '' }
+}
+
+/** Known Claude Code prompts and the keystrokes needed to proceed */
+const PROMPT_HANDLERS: Array<{ match: string; keys: string; description: string }> = [
+  {
+    match: 'Bypass Permissions mode',
+    keys: 'Down Enter',
+    description: 'Accepting bypass permissions',
+  },
+  {
+    match: 'Loading development channels',
+    keys: 'Enter',
+    description: 'Accepting development channels',
+  },
+]
+
+/**
+ * Poll tmux panes and auto-confirm Claude Code startup prompts.
+ * Reads pane content to detect which prompt is showing, then sends
+ * the correct keystrokes. Handles any number of prompts in any order.
+ */
 async function autoConfirmPrompts(
   botIds: string[],
   commands: Map<string, { launchScript: string; name: string }>,
-  safeMode: boolean,
+  _safeMode: boolean,
 ) {
-  function sendKeys(windowName: string, keys: string) {
-    try { execSync(`tmux send-keys -t ${TMUX_SESSION}:${windowName} ${keys}`, { stdio: 'pipe' }) } catch {}
-  }
+  const pending = new Set(botIds.filter(id => commands.has(id)))
+  const confirmed = new Map<string, Set<string>>() // botId → set of confirmed prompts
+  for (const id of pending) confirmed.set(id, new Set())
 
-  await sleep(3000)
+  const MAX_WAIT = 20_000
+  const POLL_INTERVAL = 500
+  let waited = 0
 
-  if (!safeMode) {
-    // Prompt 1: "Bypass Permissions" — default is "No, exit" (option 1)
-    // Need to select "Yes, I accept" (option 2): Down arrow then Enter
-    for (const botId of botIds) {
-      const cmd = commands.get(botId)
-      if (!cmd) continue
-      sendKeys(tmuxWindowName(botId, cmd.name), 'Down Enter')
+  while (pending.size > 0 && waited < MAX_WAIT) {
+    await sleep(POLL_INTERVAL)
+    waited += POLL_INTERVAL
+
+    // Check if tmux session died
+    if (!tmuxSessionExists()) break
+
+    for (const botId of [...pending]) {
+      const cmd = commands.get(botId)!
+      const windowName = tmuxWindowName(botId, cmd.name)
+      const pane = readPane(windowName)
+      if (!pane) continue
+
+      // Check each known prompt
+      let matched = false
+      for (const handler of PROMPT_HANDLERS) {
+        if (pane.includes(handler.match) && !confirmed.get(botId)!.has(handler.match)) {
+          try {
+            execSync(`tmux send-keys -t ${TMUX_SESSION}:${windowName} ${handler.keys}`, { stdio: 'pipe' })
+          } catch {}
+          confirmed.get(botId)!.add(handler.match)
+          matched = true
+          break // handle one prompt per poll cycle
+        }
+      }
+
+      // If pane shows the Claude Code session (no more prompts), bot is ready
+      if (!matched && confirmed.get(botId)!.size > 0 && !PROMPT_HANDLERS.some(h => pane.includes(h.match))) {
+        pending.delete(botId)
+      }
     }
-    await sleep(2000)
-  }
-
-  // Prompt 2: "Development channels" — default is "I am using this for local development" (option 1)
-  // Just Enter to confirm the default
-  for (const botId of botIds) {
-    const cmd = commands.get(botId)
-    if (!cmd) continue
-    sendKeys(tmuxWindowName(botId, cmd.name), 'Enter')
   }
 }
 
