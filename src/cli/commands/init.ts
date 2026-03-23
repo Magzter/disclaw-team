@@ -53,19 +53,42 @@ export async function init(args: string[]) {
     } else {
       rl.close()
       console.log('\n  Starting dashboard...\n')
-      const { ensureTmux } = await import('../tmux.js')
-      if (!(await ensureTmux())) { process.exit(1) }
 
-      const { TMUX_SESSION, tmuxSessionExists } = await import('../tmux.js')
-      if (!tmuxSessionExists()) {
-        const { execSync } = await import('child_process')
-        execSync(`tmux new-session -d -s ${TMUX_SESSION} -n dashboard '${dashboard.cmd.replace(/'/g, "'\\''")}'`)
+      // Run dashboard as a child process (no tmux needed for onboarding)
+      const { spawn } = await import('child_process')
+      const child = spawn('/bin/sh', ['-c', dashboard.cmd], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+
+      // Capture stderr for debugging
+      let stderr = ''
+      child.stderr?.on('data', (d: Buffer) => { stderr += d.toString() })
+
+      // Wait for server to start, then verify
+      await new Promise(r => setTimeout(r, 2500))
+      let dashboardUp = false
+      try {
+        const res = await fetch(`http://localhost:${dashboard.port}/onboarding`)
+        dashboardUp = res.ok
+      } catch {}
+
+      if (dashboardUp) {
+        console.log(`  Dashboard:  http://localhost:${dashboard.port}/onboarding`)
+        console.log(`  Complete the setup wizard in your browser.`)
+        console.log(`  Press Ctrl+C when done.\n`)
+        console.log(`  Once configured, run: disclaw-team start\n`)
+
+        // Keep process alive until user Ctrl+C or dashboard exits
+        await new Promise<void>(resolve => {
+          child.on('exit', resolve)
+          process.on('SIGINT', () => { child.kill(); resolve() })
+        })
+        return
+      } else {
+        child.kill()
+        if (stderr) console.log(`  Dashboard error: ${stderr.split('\n')[0]}\n`)
+        console.log('  Dashboard failed to start. Continuing with terminal setup.\n')
       }
-
-      console.log(`  Dashboard:  http://localhost:${dashboard.port}/onboarding`)
-      console.log(`  Complete the setup wizard in your browser.\n`)
-      console.log(`  Once configured, run: disclaw-team start\n`)
-      return
     }
   }
 
