@@ -61,6 +61,11 @@ function readPane(windowName: string): string {
 /** Known Claude Code prompts and the keystrokes needed to proceed */
 const PROMPT_HANDLERS: Array<{ match: string; keys: string; description: string }> = [
   {
+    match: 'Yes, I trust this folder',
+    keys: 'Enter',
+    description: 'Trusting workspace folder',
+  },
+  {
     match: 'Bypass Permissions mode',
     keys: 'Down Enter',
     description: 'Accepting bypass permissions',
