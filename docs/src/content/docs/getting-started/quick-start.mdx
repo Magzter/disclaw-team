@@ -5,6 +5,10 @@ description: One command from zero to a running AI team in your Discord server.
 
 One command from zero to a running team in your Discord server.
 
+:::danger[Security — read before running]
+By default, disclaw-team runs Claude Code with `--dangerously-skip-permissions`. **Anyone who can send messages in your Discord server can trigger commands on your machine** — file reads, writes, shell execution, and more. Only run on servers where you trust every member. Use `--safe` mode for approval-based operation, or run on an isolated machine. See [Safe Mode](../concepts/safe-mode) for details.
+:::
+
 ## Run the setup
 
 ```bash

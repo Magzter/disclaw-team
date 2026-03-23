@@ -4,6 +4,15 @@ Deploy a team of AI assistants to your Discord server.
 
 `disclaw-team` is an open-source tool for running multiple Claude Code bots in a Discord server — each with its own role, personality, and specialization. Built on [Claude Code Channels](https://docs.anthropic.com/en/docs/claude-code/channels), every bot runs as a full Claude Code session through your existing Claude Pro subscription. No API keys, no per-token billing.
 
+> **⚠️ Security Warning:** By default, disclaw-team runs Claude Code with `--dangerously-skip-permissions`, meaning **anyone who can send messages in your Discord server can trigger commands on your machine** — file reads, writes, shell execution, and more. This is powerful but dangerous.
+>
+> **Only run this on Discord servers where you trust every member.** Treat server access as root access to the host machine. For safer operation:
+> - Use `--safe` mode to route permission prompts to your Discord DMs
+> - Run on an isolated machine or VM, not your primary workstation
+> - Restrict your Discord server to trusted collaborators only
+>
+> See [Safe Mode](docs/src/content/docs/concepts/safe-mode.mdx) for details.
+
 ## How It Works
 
 Each bot is an independent Claude Code session connected to Discord via the Model Context Protocol (MCP). They share channels, see each other's messages, and collaborate — with humans able to watch, interject, and redirect at any time.
@@ -54,10 +63,10 @@ One command. All bots online.
 - Chain of command — specialists report to orchestrator, not humans directly
 
 **Permission System**
-- Default: `--dangerously-skip-permissions` for autonomous operation
-- Safe mode (`--safe`): permission prompts routed to owner's Discord DMs
-- Three options: Approve once, Always allow, Deny
-- "Always allow" saves rules so it learns over time
+- Default mode skips permissions for autonomous operation — **only use on trusted servers**
+- Safe mode (`disclaw-team start --safe`): every tool call requires approval via Discord DM
+- Three approval options: Approve once, Always allow, Deny
+- "Always allow" saves rules so trusted tools stop prompting
 
 ## Quick Start
 

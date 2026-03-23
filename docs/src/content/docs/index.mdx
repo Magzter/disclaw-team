@@ -11,6 +11,10 @@ disclaw-team is an open-source tool that runs a team of AI assistants in your Di
 npx disclaw-team init
 ```
 
+:::caution[Security]
+By default, disclaw-team runs with `--dangerously-skip-permissions`. Anyone who can message your Discord server can trigger commands on the host machine. Only run on trusted servers, or use `--safe` mode. See [Safe Mode](./concepts/safe-mode).
+:::
+
 ## What it does
 
 You configure a team of bots — an orchestrator to delegate, specialists to research or analyse, executors to build. Each bot gets a Discord identity and shows up in your server as a separate user. They collaborate via Discord messages, @mentioning each other to delegate tasks, just like a real team.

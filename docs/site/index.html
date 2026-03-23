@@ -1541,7 +1541,7 @@
           <div class="feat-icon">🔐</div>
           <div>
             <div class="feat-name">Permission System</div>
-            <div class="feat-desc">Safe mode sends approval requests to your Discord DMs. Approve once, always allow, or deny. The system learns.</div>
+            <div class="feat-desc">Default mode is fully autonomous — use only on trusted servers. Safe mode (--safe) routes every action to your Discord DMs for approval.</div>
           </div>
           <div class="feat-tag">human-in-loop</div>
         </div>
@@ -1718,6 +1718,17 @@
   </section>
 
   <hr class="divider">
+
+  <!-- Security warning -->
+  <section class="section">
+    <div class="wrap-narrow">
+      <div style="border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:1.5rem 2rem;background:rgba(251,191,36,0.05);">
+        <div style="font-family:var(--display);font-weight:700;color:#fbbf24;font-size:1rem;margin-bottom:0.5rem;">⚠ Security Notice</div>
+        <p style="font-size:0.82rem;color:var(--text);line-height:1.7;margin-bottom:0.6rem;">By default, disclaw-team runs Claude Code with <code style="font-size:0.75rem;background:var(--surface);padding:0.15rem 0.4rem;border-radius:4px;">--dangerously-skip-permissions</code>. This means <strong style="color:var(--bright);">anyone who can message your Discord server can trigger commands on your machine</strong> — file access, shell execution, and more.</p>
+        <p style="font-size:0.82rem;color:var(--text);line-height:1.7;margin-bottom:0;">Only run on servers where you trust every member. Use <strong style="color:var(--bright);">safe mode</strong> (<code style="font-size:0.75rem;background:var(--surface);padding:0.15rem 0.4rem;border-radius:4px;">--safe</code>) to require approval for each action via Discord DM, or run on an isolated machine.</p>
+      </div>
+    </div>
+  </section>
 
   <!-- CTA -->
   <section class="section" style="text-align:center;">
