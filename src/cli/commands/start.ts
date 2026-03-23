@@ -249,7 +249,7 @@ function generateBotState(config: ReturnType<typeof loadConfig>, botId: string, 
   }
 
   const permFlag = safeMode ? '' : '--dangerously-skip-permissions '
-  const claudeCmd = `cd "${workspace}" && claude ${permFlag}${modelFlag}${effortFlag}--dangerously-load-development-channels server:disclaw-team --mcp-config "${mcpConfigFile}" --settings "${settingsFile}" --append-system-prompt "$(cat "${promptFile}")"`
+  const claudeCmd = `cd "${workspace}" && claude ${permFlag}${modelFlag}${effortFlag}--dangerously-load-development-channels server:disclaw-team --strict-mcp-config --mcp-config "${mcpConfigFile}" --settings "${settingsFile}" --append-system-prompt "$(cat "${promptFile}")"`
 
   // Write launch script (used by tmux to avoid shell quoting issues)
   const launchScript = join(stateDir, 'launch.sh')
