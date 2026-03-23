@@ -1001,4 +1001,19 @@ client.once('clientReady', async c => {
   }
 })
 
-await client.login(TOKEN)
+try {
+  await client.login(TOKEN)
+} catch (err) {
+  const msg = (err as Error).message || String(err)
+  if (msg.includes('disallowed intents')) {
+    process.stderr.write(`\ndisclaw-team: Discord login failed — missing privileged intents.\n`)
+    process.stderr.write(`Enable "Message Content Intent" and "Server Members Intent" in the Discord Developer Portal:\n`)
+    process.stderr.write(`  https://discord.com/developers/applications → Bot → Privileged Gateway Intents\n\n`)
+  } else if (msg.includes('TOKEN_INVALID') || msg.includes('Incorrect login')) {
+    process.stderr.write(`\ndisclaw-team: Discord login failed — invalid bot token.\n`)
+    process.stderr.write(`Check ~/.disclaw-team/.env and reset your token in the Discord Developer Portal.\n\n`)
+  } else {
+    process.stderr.write(`\ndisclaw-team: Discord login failed: ${msg}\n\n`)
+  }
+  process.exit(1)
+}
