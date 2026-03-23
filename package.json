@@ -1,6 +1,6 @@
 {
   "name": "disclaw-team",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Deploy a team of AI assistants to your Discord server — each with its own personality, role, and specialization",
   "type": "module",
   "bin": {
