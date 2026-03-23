@@ -377,11 +377,21 @@ export async function start(args: string[]) {
     dashboardLine = `\n  Dashboard:             http://localhost:${dashboard.port}`
   }
 
-  console.log(`
+  if (tmuxSessionExists()) {
+    console.log(`
 All ${botIds.length} bot(s) launched in tmux session "${TMUX_SESSION}".
 ${dashboardLine}
   Attach to session:     tmux attach -t ${TMUX_SESSION}
   Switch windows:        Ctrl-B then 0-${botIds.length} (or n/p for next/prev)
   Stop all:              disclaw-team stop
 `)
+  } else {
+    console.log(`
+Error: tmux session failed to start. The bot process likely crashed immediately.
+
+  Check the launch script:  cat ~/.disclaw-team/bots/${botIds[0]}/launch.sh
+  Try running it manually:  sh ~/.disclaw-team/bots/${botIds[0]}/launch.sh
+  Is Claude Code installed? claude --version
+`)
+  }
 }
