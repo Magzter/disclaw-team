@@ -18,11 +18,13 @@ export async function loader() {
   let workspace = "";
   let model = "opus";
   let channelId = "";
+  let allowedUsers: string[] = [];
   if (existsSync(ASSIGNMENT_FILE)) {
     const raw = parseYaml(readFileSync(ASSIGNMENT_FILE, "utf-8"));
     workspace = raw.workspace || "";
     model = raw.model || "opus";
     channelId = raw.discord?.channel_id || "";
+    allowedUsers = raw.allowed_users || [];
   }
   return {
     teamName: status.teamName,
@@ -31,6 +33,7 @@ export async function loader() {
     configured: status.configured,
     workspace,
     model,
+    allowedUsers,
     botCount: status.bots.length,
     roleCount: status.availableRoles.length,
     profileCount: status.profiles.length,
@@ -68,6 +71,24 @@ export async function action({ request }: { request: Request }) {
     }
   }
 
+  if (intent === "update-allowed-users") {
+    const { join } = await import("path");
+    const { homedir } = await import("os");
+    const { existsSync, readFileSync, writeFileSync } = await import("fs");
+    const { parse: parseYaml, stringify: toYaml } = await import("yaml");
+
+    const ASSIGNMENT_FILE = join(homedir(), ".disclaw-team", "assignment.yaml");
+    if (existsSync(ASSIGNMENT_FILE)) {
+      const raw = parseYaml(readFileSync(ASSIGNMENT_FILE, "utf-8"));
+      const usersStr = form.get("allowedUsers") as string;
+      raw.allowed_users = usersStr
+        .split("\n")
+        .map((s: string) => s.trim())
+        .filter(Boolean);
+      writeFileSync(ASSIGNMENT_FILE, toYaml(raw, { lineWidth: 0 }));
+    }
+  }
+
   if (intent === "reset") {
     const { join } = await import("path");
     const { homedir } = await import("os");
@@ -84,7 +105,7 @@ export async function action({ request }: { request: Request }) {
 }
 
 export default function Settings({ loaderData }: Route.ComponentProps) {
-  const { configured, guildId, channelId, workspace, model, botCount, roleCount } = loaderData;
+  const { configured, guildId, channelId, workspace, model, allowedUsers, botCount, roleCount } = loaderData;
 
   if (!configured) {
     return (
@@ -137,6 +158,32 @@ export default function Settings({ loaderData }: Route.ComponentProps) {
                 </select>
               </div>
             </div>
+          </div>
+          <div className="mt-4">
+            <SubmitButton>Save</SubmitButton>
+          </div>
+        </Form>
+      </Section>
+
+      {/* Allowed Users */}
+      <Section title="Allowed Users">
+        <Form method="post">
+          <input type="hidden" name="intent" value="update-allowed-users" />
+          <div className={`${cardClass} p-4`}>
+            <p className="text-xs text-[var(--color-text-secondary)] mb-3">
+              Only these Discord users can interact with your bots. Leave empty to allow everyone (not recommended for public servers).
+              One Discord user ID per line. Right-click a user in Discord → Copy ID.
+            </p>
+            <textarea
+              name="allowedUsers"
+              defaultValue={allowedUsers.join("\n")}
+              rows={4}
+              className={`${inputClass} font-mono text-xs`}
+              placeholder={"201897892368220161\n309128475610293842"}
+            />
+            <p className="text-xs text-[var(--color-warning)] mt-2">
+              ⚠ Bots always see each other regardless of this list. Requires restart to take effect.
+            </p>
           </div>
           <div className="mt-4">
             <SubmitButton>Save</SubmitButton>

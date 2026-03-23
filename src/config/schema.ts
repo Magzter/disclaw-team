@@ -126,6 +126,7 @@ export const TeamConfigSchema = z.object({
   roles: z.record(RoleSchema).default({}),
   bots: z.record(BotSchema),
   humans: z.record(HumanSchema).default({}),
+  allowed_users: z.array(z.string()).default([]), // Discord user IDs. Empty = allow all.
 })
 
 // --- Inferred types ---

@@ -194,6 +194,7 @@ export async function init(args: string[]) {
         role: 'owner',
       },
     } : {},
+    allowed_users: humanDiscordId ? [humanDiscordId] : [],
     overrides: {},
   }
   saveAssignment(assignment)

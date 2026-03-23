@@ -807,16 +807,20 @@ await mcp.connect(new StdioServerTransport())
 const otherBotDiscordIds = new Set<string>()
 const TEAM_CONFIG_PATH = process.env.CLAUDE_TEAM_CONFIG
 
-// Load team bot names for mention pattern matching
+// Load team config for bot names and user allowlist
 const teamBotNames: string[] = []
+const allowedUsers = new Set<string>() // empty = allow all
 if (TEAM_CONFIG_PATH && existsSync(TEAM_CONFIG_PATH)) {
   try {
     const raw = readFileSync(TEAM_CONFIG_PATH, 'utf-8')
-    const teamConfig = parseYaml(raw) as { bots?: Record<string, { name?: string }> }
+    const teamConfig = parseYaml(raw) as { bots?: Record<string, { name?: string }>; allowed_users?: string[] }
     for (const [id, bot] of Object.entries(teamConfig.bots ?? {})) {
       if (id !== BOT_ID) {
         teamBotNames.push((bot.name ?? '').toLowerCase())
       }
+    }
+    for (const uid of teamConfig.allowed_users ?? []) {
+      if (uid) allowedUsers.add(uid)
     }
   } catch {}
 }
@@ -862,6 +866,12 @@ client.on('messageCreate', msg => {
   // Track other bots' Discord IDs as we see them
   if (msg.author.bot) {
     otherBotDiscordIds.add(msg.author.id)
+  }
+
+  // User allowlist: if configured, drop messages from non-whitelisted humans
+  // Bots (other team members) always pass through
+  if (!msg.author.bot && allowedUsers.size > 0 && !allowedUsers.has(msg.author.id)) {
+    return
   }
 
   // Bot messages are delivered immediately (they're typically single, complete messages)

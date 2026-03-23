@@ -249,6 +249,7 @@ export function generateTeamConfig(
     roles,
     bots: botConfigs,
     humans,
+    allowed_users: assignment.allowed_users || [],
   }
 }
 

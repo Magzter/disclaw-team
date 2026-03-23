@@ -102,6 +102,7 @@ export const AssignmentConfigSchema = z.object({
   model: z.string().default('opus'),
   assignments: z.record(z.string()), // bot-id → role-filename (without .yaml)
   humans: z.record(HumanEntrySchema).default({}),
+  allowed_users: z.array(z.string()).default([]), // Discord user IDs that can interact with bots. Empty = allow all.
   overrides: z.object({
     protocol: ProtocolOverrideSchema.optional(),
   }).default({}),

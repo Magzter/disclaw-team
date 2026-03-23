@@ -131,6 +131,7 @@ export async function action({ request }: { request: Request }) {
       humans: humanDiscordId
         ? { [humanName.toLowerCase().replace(/[^a-z0-9]+/g, "-")]: { name: humanName, discord_id: humanDiscordId, role: "owner" } }
         : {},
+      allowed_users: humanDiscordId ? [humanDiscordId] : [],
       overrides: {},
     };
     writeFileSync(join(BASE, "assignment.yaml"), toYaml(assignment, { lineWidth: 0 }));
@@ -190,6 +191,12 @@ export default function Onboarding({ loaderData }: Route.ComponentProps) {
       {step === 0 && (
         <div>
           <h3 className="text-lg font-medium mb-4">Discord Server</h3>
+          <div className={`${cardClass} p-3 mb-4 border-[var(--color-accent)]/30`}>
+            <p className="text-xs text-[var(--color-text-secondary)]">
+              <strong className="text-[var(--color-accent)]">Tip:</strong> Enable Developer Mode in Discord to copy IDs.
+              Open <strong>User Settings → App Settings → Advanced → Developer Mode</strong>. Then right-click any server, channel, or user and select <strong>Copy ID</strong>.
+            </p>
+          </div>
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-[var(--color-text-secondary)] mb-1">Discord Server ID</label>
