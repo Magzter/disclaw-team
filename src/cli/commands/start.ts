@@ -326,7 +326,7 @@ export async function start(args: string[]) {
   // Check if registry already has all bot IDs (from a previous run)
   const registryComplete = allBotsRegistered(botIds)
 
-  // Phase 1: Generate state and launch
+  // Phase 1: Generate state
   console.log(registryComplete ? 'Starting team...' : 'Starting team (first run — will auto-restart to pick up Discord IDs)...')
 
   const commands = new Map<string, { launchScript: string; name: string }>()
@@ -337,6 +337,35 @@ export async function start(args: string[]) {
     commands.set(botId, { launchScript, name: bot.name })
     console.log(`  ${bot.name} (${botId})`)
   }
+
+  // Pre-flight: verify Discord connections before launching tmux
+  console.log('\nVerifying Discord connections...')
+  let preflightFailed = false
+  for (const botId of botIds) {
+    const stateDir = join(BOTS_DIR, botId)
+    const mcpCmd = buildMcpConfig(botId, stateDir, configPath)
+    const parsed = JSON.parse(mcpCmd)
+    const serverCmd = parsed.mcpServers['disclaw-team'].args[1]
+    try {
+      execSync(serverCmd, { stdio: 'pipe', timeout: 10000, shell: '/bin/sh' })
+    } catch (err) {
+      const e = err as { stderr?: Buffer; killed?: boolean }
+      const stderr = e.stderr?.toString() || ''
+      if (e.killed) {
+        // Timeout = server started successfully (connected to Discord, waiting for MCP messages)
+        continue
+      }
+      if (stderr.includes('disclaw-team:')) {
+        console.error(`\n  ${botId}: ${stderr.trim().split('\n').join('\n  ')}`)
+        preflightFailed = true
+      }
+    }
+  }
+  if (preflightFailed) {
+    console.error('\nFix the above errors and try again.\n')
+    process.exit(1)
+  }
+  console.log('  All connections verified.\n')
 
   launchBots(botIds, commands)
 
