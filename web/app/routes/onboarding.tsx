@@ -237,8 +237,21 @@ export default function Onboarding({ loaderData }: Route.ComponentProps) {
         <div>
           <h3 className="text-lg font-medium mb-2">Create Bots</h3>
           <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-            Create bot applications in the Discord Developer Portal. Enable Message Content Intent for each.
+            Each bot needs its own Discord application. For a 3-bot team, repeat these steps 3 times.
           </p>
+
+          <div className={`${cardClass} p-4 mb-4 border-[var(--color-accent)]/30`}>
+            <p className="text-xs font-medium text-[var(--color-accent)] mb-2">How to create each bot:</p>
+            <ol className="text-xs text-[var(--color-text-secondary)] space-y-1.5 list-decimal list-inside">
+              <li>Go to <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="text-[var(--color-accent)] underline">discord.com/developers/applications</a></li>
+              <li><strong>New Application</strong> → name it (e.g. "Team Lead Bot") → <strong>Create</strong></li>
+              <li>Click <strong>Bot</strong> in the sidebar → <strong>Reset Token</strong> → copy the token</li>
+              <li>Scroll to <strong>Privileged Gateway Intents</strong> → enable <strong>Message Content Intent</strong> and <strong>Server Members Intent</strong> → <strong>Save Changes</strong></li>
+              <li>Click <strong>OAuth2 → URL Generator</strong> → check <strong>bot</strong> scope → check <strong>Send Messages</strong>, <strong>Read Message History</strong>, <strong>View Channels</strong>, <strong>Add Reactions</strong></li>
+              <li>Open the generated URL → invite the bot to your server</li>
+            </ol>
+          </div>
+
           <div className="space-y-4">
             {bots.map((bot, i) => (
               <div key={i} className={`${cardClass} p-4`}>

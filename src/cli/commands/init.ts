@@ -112,8 +112,13 @@ export async function init(args: string[]) {
 
   // Step 2: Create bots
   console.log('\n  Step 2: Set up your bots\n')
-  console.log('  Create bot applications in the Discord Developer Portal.')
-  console.log('  Each bot needs: Message Content Intent enabled, invite to your server.\n')
+  console.log('  For each bot, go to https://discord.com/developers/applications and:')
+  console.log('    1. New Application → name it → Create')
+  console.log('    2. Bot → Reset Token → copy the token')
+  console.log('    3. Enable Message Content Intent + Server Members Intent → Save')
+  console.log('    4. OAuth2 → URL Generator → check "bot" scope')
+  console.log('       Permissions: Send Messages, Read Message History, View Channels, Add Reactions')
+  console.log('    5. Open the generated URL → invite bot to your server\n')
 
   const botCountStr = await prompt(rl, 'How many bots?', '3')
   const botCount = Math.max(1, parseInt(botCountStr, 10) || 3)
