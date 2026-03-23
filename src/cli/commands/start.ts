@@ -51,6 +51,38 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+/** Send keystrokes to auto-confirm Claude Code startup prompts in tmux */
+async function autoConfirmPrompts(
+  botIds: string[],
+  commands: Map<string, { launchScript: string; name: string }>,
+  safeMode: boolean,
+) {
+  function sendKeys(windowName: string, keys: string) {
+    try { execSync(`tmux send-keys -t ${TMUX_SESSION}:${windowName} ${keys}`, { stdio: 'pipe' }) } catch {}
+  }
+
+  await sleep(3000)
+
+  if (!safeMode) {
+    // Prompt 1: "Bypass Permissions" — default is "No, exit" (option 1)
+    // Need to select "Yes, I accept" (option 2): Down arrow then Enter
+    for (const botId of botIds) {
+      const cmd = commands.get(botId)
+      if (!cmd) continue
+      sendKeys(tmuxWindowName(botId, cmd.name), 'Down Enter')
+    }
+    await sleep(2000)
+  }
+
+  // Prompt 2: "Development channels" — default is "I am using this for local development" (option 1)
+  // Just Enter to confirm the default
+  for (const botId of botIds) {
+    const cmd = commands.get(botId)
+    if (!cmd) continue
+    sendKeys(tmuxWindowName(botId, cmd.name), 'Enter')
+  }
+}
+
 function generateBotState(config: ReturnType<typeof loadConfig>, botId: string, token: string, configPath: string, safeMode: boolean = false) {
   const bot = getBotConfig(config, botId)
   const stateDir = join(BOTS_DIR, botId)
@@ -267,22 +299,10 @@ export async function start(args: string[]) {
 
   launchBots(botIds, commands)
 
-  // Auto-confirm startup prompts (development channels warning + dangerous mode)
-  // Send Enter twice with a delay to handle both prompts
-  await sleep(3000)
-  for (const botId of botIds) {
-    const cmd = commands.get(botId)
-    if (!cmd) continue
-    const windowName = tmuxWindowName(botId, cmd.name)
-    try { execSync(`tmux send-keys -t ${TMUX_SESSION}:${windowName} Enter`, { stdio: 'pipe' }) } catch {}
-  }
-  await sleep(2000)
-  for (const botId of botIds) {
-    const cmd = commands.get(botId)
-    if (!cmd) continue
-    const windowName = tmuxWindowName(botId, cmd.name)
-    try { execSync(`tmux send-keys -t ${TMUX_SESSION}:${windowName} Enter`, { stdio: 'pipe' }) } catch {}
-  }
+  // Auto-confirm Claude Code startup prompts
+  // Prompt 1 (non-safe mode only): "Bypass Permissions" — default is "No, exit", need Down+Enter
+  // Prompt 2: "Development channels" — default is "I am using this for local development", just Enter
+  await autoConfirmPrompts(botIds, commands, safeMode)
 
   // Phase 2: If registry was incomplete, wait for bots to register then restart
   if (!registryComplete) {
@@ -317,20 +337,7 @@ export async function start(args: string[]) {
       launchBots(botIds, commands)
 
       // Auto-confirm startup prompts
-      await sleep(3000)
-      for (const botId of botIds) {
-        const cmd = commands.get(botId)
-        if (!cmd) continue
-        const windowName = tmuxWindowName(botId, cmd.name)
-        try { execSync(`tmux send-keys -t ${TMUX_SESSION}:${windowName} Enter`, { stdio: 'pipe' }) } catch {}
-      }
-      await sleep(2000)
-      for (const botId of botIds) {
-        const cmd = commands.get(botId)
-        if (!cmd) continue
-        const windowName = tmuxWindowName(botId, cmd.name)
-        try { execSync(`tmux send-keys -t ${TMUX_SESSION}:${windowName} Enter`, { stdio: 'pipe' }) } catch {}
-      }
+      await autoConfirmPrompts(botIds, commands, safeMode)
 
       console.log('Restarted with full Discord mention IDs.')
     } else {
