@@ -137,7 +137,7 @@ export async function action({ request }: { request: Request }) {
 
     const assignment = {
       discord: { guild_id: guildId, channel_id: channelId },
-      workspace: workspace || process.cwd(),
+      workspace: workspace || homedir(),
       model: "opus",
       assignments,
       humans: humanDiscordId
