@@ -12,11 +12,11 @@
     "src/templates"
   ],
   "scripts": {
-    "build": "bun scripts/build.ts",
-    "dev": "bun run src/cli/index.ts",
-    "typecheck": "bunx tsc --noEmit",
-    "prepublishOnly": "bun run build",
-    "test": "bun test"
+    "build": "npx tsx scripts/build.ts",
+    "dev": "npx tsx src/cli/index.ts",
+    "typecheck": "npx tsc --noEmit",
+    "prepublishOnly": "npm run build",
+    "test": "npx tsx --test"
   },
   "keywords": [
     "discord",

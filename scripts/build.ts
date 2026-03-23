@@ -1,7 +1,7 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Build script — compiles TypeScript to JavaScript for npm publishing.
- * Uses bun build with --target=node for Node.js compatibility.
+ * Works with both Node.js (npx) and Bun (bunx).
  */
 
 import { execSync } from 'child_process'
@@ -11,14 +11,22 @@ import { join } from 'path'
 const ROOT = join(new URL('.', import.meta.url).pathname, '..')
 const DIST = join(ROOT, 'dist')
 
-console.log('Building disclaw-team...')
+/** Find npx or bunx — whichever is available */
+function findRunner(): string {
+  try { execSync('bunx --version', { stdio: 'pipe' }); return 'bunx' } catch {}
+  try { execSync('npx --version', { stdio: 'pipe' }); return 'npx' } catch {}
+  throw new Error('Neither bunx nor npx found. Install Node.js or Bun.')
+}
+
+const runner = findRunner()
+console.log(`Building disclaw-team... (using ${runner})`)
 
 // Clean
 execSync(`rm -rf ${DIST}`)
 mkdirSync(DIST, { recursive: true })
 
 // 1. Compile TypeScript → JavaScript with tsc (preserves module structure)
-execSync('bunx tsc --outDir dist --declaration --sourceMap', {
+execSync(`${runner} tsc --outDir dist --declaration --sourceMap`, {
   cwd: ROOT,
   stdio: 'inherit',
 })

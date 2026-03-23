@@ -125,7 +125,7 @@ export async function action({ request }: { request: Request }) {
       ];
       const loaderPath = loaderCandidates.find(p => exists(p));
       if (loaderPath) {
-        const { installPreloadedRoles } = await import(loaderPath);
+        const { installPreloadedRoles } = await import(/* @vite-ignore */ loaderPath);
         installPreloadedRoles();
       }
     } catch {}
