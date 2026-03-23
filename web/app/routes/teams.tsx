@@ -3,6 +3,12 @@ import { Form, redirect, useSearchParams } from "react-router";
 import { PageHeader, Section, RoleBadge, SubmitButton, cardClass, inputClass } from "../components/ui";
 import type { Route } from "./+types/teams";
 
+/** Reject names with path traversal characters */
+function safeName(name: string | null): string | null {
+  if (!name || /[\/\\.\x00]/.test(name)) return null;
+  return name;
+}
+
 interface TeamInfo {
   name: string;
   description: string;
@@ -180,7 +186,7 @@ export async function action({ request }: { request: Request }) {
   }
 
   if (intent === "save") {
-    const name = form.get("name") as string;
+    const name = safeName(form.get("name") as string);
     if (!name) return null;
 
     const { join } = await import("path");
@@ -203,7 +209,7 @@ export async function action({ request }: { request: Request }) {
   }
 
   if (intent === "load") {
-    const name = form.get("name") as string;
+    const name = safeName(form.get("name") as string);
     if (!name) return null;
 
     const { join } = await import("path");
@@ -223,7 +229,7 @@ export async function action({ request }: { request: Request }) {
   }
 
   if (intent === "delete") {
-    const name = form.get("name") as string;
+    const name = safeName(form.get("name") as string);
     if (!name) return null;
 
     const { join } = await import("path");

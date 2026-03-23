@@ -11,7 +11,7 @@ Deploy a team of AI assistants to your Discord server.
 > - Run on an isolated machine or VM, not your primary workstation
 > - Restrict your Discord server to trusted collaborators only
 >
-> See [Safe Mode](docs/src/content/docs/concepts/safe-mode.mdx) for details.
+> See [Safe Mode](https://magzter.github.io/disclaw-team/docs/concepts/safe-mode/) for details.
 
 ## How It Works
 
@@ -41,7 +41,7 @@ One command. All bots online.
 - Visual bot management with live status
 - Role picker — click a bot, pick a role
 - Roles library with model/reasoning badges
-- One-click team presets (Executive, Dev Team, Frontend, Product, Content, Research)
+- One-click team presets (Executive, Dev Team, Frontend, Product, Content, Research, Solo)
 - Schedules with visual cron builder
 - Onboarding wizard for first-time setup
 - Profile save/load for switching between team configs
@@ -89,12 +89,12 @@ From the dashboard you can:
 
 | Preset | Bots | Use Case |
 |--------|------|----------|
-| **Executive** | CEO, Researcher, Validator, Engineer | Research-backed decisions |
-| **Dev Team** | Tech Lead, Frontend, Backend, QA | Software development |
+| **Executive** | Team Lead, Researcher, Validator, Engineer | Research-backed decisions |
+| **Dev Team** | Tech Lead, Frontend Dev, Backend Dev, QA | Software development |
 | **Frontend** | Creative Director, UI Designer, Frontend Dev, Reviewer | Design + frontend |
-| **Product** | Product Manager, UX Researcher, Frontend Dev, Copywriter | Product design |
-| **Content** | Editor, Writer, Researcher, Fact-checker | Content creation |
-| **Research** | Lead Analyst, Researcher, Analyst, Reviewer | Deep analysis |
+| **Product** | Product Manager, UX Researcher, Copywriter, Reviewer | Product design |
+| **Content** | Editor, Writer, Researcher, Fact-Checker | Content creation |
+| **Research** | Lead Analyst, Researcher A, Researcher B, Data Analyst, Peer Reviewer | Deep analysis |
 | **Solo** | Single assistant | Stock Discord plugin replacement |
 
 ## Roles Library
@@ -170,7 +170,7 @@ The Discord MCP server provides 11 tools:
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org) 18+ (or [Bun](https://bun.sh))
+- [Node.js](https://nodejs.org) 20+ (or [Bun](https://bun.sh))
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI with a Claude Pro subscription or higher
 - [tmux](https://github.com/tmux/tmux) — auto-installed on macOS/Linux if missing
 - Discord bot tokens from the [Developer Portal](https://discord.com/developers/applications)

@@ -43,31 +43,30 @@ export async function init(args: string[]) {
   const setupChoice = await prompt(rl, 'Open the dashboard to set up? [Y/n]', 'Y')
 
   if (setupChoice.toLowerCase() !== 'n') {
-    rl.close()
-    console.log('\n  Starting dashboard...\n')
-    // Launch just the web dashboard (no bots yet — onboarding will handle that)
-    const { ensureTmux } = await import('../tmux.js')
-    if (!(await ensureTmux())) { process.exit(1) }
+    // Try to launch the web dashboard
+    const { findDashboard } = await import('../dashboard.js')
+    const dashboard = findDashboard()
 
-    const { TMUX_SESSION, tmuxSessionExists } = await import('../tmux.js')
-    const webCandidates = [
-      join(new URL('../../..', import.meta.url).pathname, 'web'),
-      join(process.cwd(), 'web'),
-    ]
-    const webDir = webCandidates.find(p => existsSync(join(p, 'package.json')))
-    if (webDir) {
-      const npmCmd = existsSync(join(webDir, 'node_modules')) ? 'npm run dev' : 'npm install && npm run dev'
-      const dashCmd = `cd ${webDir} && ${npmCmd}`
+    if (!dashboard) {
+      // No dashboard available — fall through to terminal setup
+      console.log('\n  Web dashboard not available. Continuing with terminal setup.\n')
+    } else {
+      rl.close()
+      console.log('\n  Starting dashboard...\n')
+      const { ensureTmux } = await import('../tmux.js')
+      if (!(await ensureTmux())) { process.exit(1) }
+
+      const { TMUX_SESSION, tmuxSessionExists } = await import('../tmux.js')
       if (!tmuxSessionExists()) {
         const { execSync } = await import('child_process')
-        execSync(`tmux new-session -d -s ${TMUX_SESSION} -n dashboard '${dashCmd.replace(/'/g, "'\\''")}'`)
+        execSync(`tmux new-session -d -s ${TMUX_SESSION} -n dashboard '${dashboard.cmd.replace(/'/g, "'\\''")}'`)
       }
-    }
 
-    console.log(`  Dashboard:  http://localhost:5173/onboarding`)
-    console.log(`  Complete the setup wizard in your browser.\n`)
-    console.log(`  Once configured, run: disclaw-team start\n`)
-    return
+      console.log(`  Dashboard:  http://localhost:${dashboard.port}/onboarding`)
+      console.log(`  Complete the setup wizard in your browser.\n`)
+      console.log(`  Once configured, run: disclaw-team start\n`)
+      return
+    }
   }
 
   console.log('\n  Step 1: Set up your Discord server\n')
@@ -101,7 +100,8 @@ export async function init(args: string[]) {
 
   for (let i = 0; i < botCount; i++) {
     console.log(`\n  --- Bot ${i + 1} of ${botCount} ---`)
-    const botName = await prompt(rl, '  Bot ID (short name, e.g. bot-1)', `bot-${i + 1}`)
+    const rawName = await prompt(rl, '  Bot ID (short name, e.g. bot-1)', `bot-${i + 1}`)
+    const botName = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `bot-${i + 1}`
     const botToken = await prompt(rl, '  Discord bot token')
 
     if (!botToken) {

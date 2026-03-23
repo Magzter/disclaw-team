@@ -40,6 +40,7 @@
   "author": "Matt Magliolo (https://github.com/Magzter)",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@react-router/serve": "^7.13.0",
     "discord.js": "^14.14.0",
     "yaml": "^2.7.0",
     "zod": "^3.24.0"
@@ -49,6 +50,6 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }

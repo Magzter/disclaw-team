@@ -21,8 +21,9 @@ export async function loader({ params }: Route.LoaderArgs) {
   const { getTeamStatus } = await import("../lib/status.server");
 
   const { name } = params;
+  if (!name || /[\/\\.\x00]/.test(name)) throw new Response("Invalid team name", { status: 400 });
   const base = join(homedir(), ".disclaw-team");
-  const teamDir = join(base, "teams", name!);
+  const teamDir = join(base, "teams", name);
   const assignPath = join(teamDir, "assignment.yaml");
 
   if (!existsSync(assignPath)) throw new Response("Team not found", { status: 404 });
@@ -53,6 +54,7 @@ export async function action({ request, params }: Route.ActionArgs) {
   const form = await request.formData();
   const intent = form.get("intent") as string;
   const { name } = params;
+  if (!name || /[\/\\.\x00]/.test(name)) throw new Response("Invalid team name", { status: 400 });
 
   const { join } = await import("path");
   const { homedir } = await import("os");
@@ -60,7 +62,7 @@ export async function action({ request, params }: Route.ActionArgs) {
   const { parse: parseYaml, stringify: toYaml } = await import("yaml");
 
   const base = join(homedir(), ".disclaw-team");
-  const teamDir = join(base, "teams", name!);
+  const teamDir = join(base, "teams", name);
   const assignPath = join(teamDir, "assignment.yaml");
 
   if (intent === "save") {

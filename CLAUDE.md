@@ -17,7 +17,7 @@ An open-source CLI tool + Claude Code plugin for deploying multi-bot AI teams to
 ## Tech stack
 
 - TypeScript (strict mode, ESM)
-- Node.js 18+ (Bun also supported)
+- Node.js 20+ (Bun also supported)
 - discord.js v14
 - @modelcontextprotocol/sdk
 - Zod (config validation)
@@ -30,7 +30,7 @@ An open-source CLI tool + Claude Code plugin for deploying multi-bot AI teams to
 - `src/server/server.ts` — MCP server (forked from stock Discord plugin)
 - `src/config/` — Zod schema, config loader, writer
 - `src/generator/` — Per-bot CLAUDE.md and access.json generators
-- `src/templates/` — Team templates (executive, solo)
+- `src/templates/` — Team templates (executive, dev-team, frontend, product, content, research, solo)
 - `skills/` — Claude Code plugin skills (configure, start, status)
 
 ## Development

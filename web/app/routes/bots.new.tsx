@@ -21,7 +21,7 @@ export async function loader() {
 export async function action({ request }: { request: Request }) {
   const { join } = await import("path");
   const { homedir } = await import("os");
-  const { existsSync, readFileSync, writeFileSync, appendFileSync } = await import("fs");
+  const { existsSync, readFileSync, writeFileSync, appendFileSync, chmodSync } = await import("fs");
   const { parse: parseYaml, stringify: toYaml } = await import("yaml");
 
   const BASE = join(homedir(), ".disclaw-team");
@@ -37,13 +37,16 @@ export async function action({ request }: { request: Request }) {
   // Add to bots.yaml
   const botsPath = join(BASE, "bots.yaml");
   if (existsSync(botsPath)) {
-    const raw = parseYaml(readFileSync(botsPath, "utf-8"));
+    const raw = parseYaml(readFileSync(botsPath, "utf-8")) || {};
+    if (!raw.bots) raw.bots = {};
     raw.bots[botId] = { token_env: tokenEnv };
     writeFileSync(botsPath, toYaml(raw, { lineWidth: 0 }));
   }
 
-  // Add token to .env
-  appendFileSync(join(BASE, ".env"), `${tokenEnv}=${token}\n`, { mode: 0o600 });
+  // Add token to .env (appendFileSync doesn't support mode, so ensure permissions after)
+  const envPath = join(BASE, ".env");
+  appendFileSync(envPath, `${tokenEnv}=${token}\n`);
+  try { chmodSync(envPath, 0o600); } catch {}
 
   // Add to assignment.yaml (even if unassigned — empty string)
   const assignPath = join(BASE, "assignment.yaml");

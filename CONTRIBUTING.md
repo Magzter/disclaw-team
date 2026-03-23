@@ -14,7 +14,7 @@ Thanks for your interest in contributing! This project is in early development a
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org) 18+ (or [Bun](https://bun.sh))
+- [Node.js](https://nodejs.org) 20+ (or [Bun](https://bun.sh))
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI (for testing)
 - A Discord bot token (for integration testing)
 

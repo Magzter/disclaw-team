@@ -13,6 +13,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   const { parse: parseYaml } = await import("yaml");
 
   const { roleId } = params;
+  if (!roleId || /[\/\\.\x00]/.test(roleId)) throw new Response("Invalid role ID", { status: 400 });
   const ROLES_DIR = join(homedir(), ".disclaw-team", "roles");
   const path = join(ROLES_DIR, `${roleId}.yaml`);
   if (!existsSync(path)) throw new Response("Role not found", { status: 404 });
@@ -28,6 +29,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   const ROLES_DIR = join(homedir(), ".disclaw-team", "roles");
   const { roleId } = params;
+  if (!roleId || /[\/\\.\x00]/.test(roleId)) throw new Response("Invalid role ID", { status: 400 });
   const form = await request.formData();
   const intent = form.get("intent") as string;
 
@@ -60,7 +62,8 @@ export async function action({ request, params }: Route.ActionArgs) {
   }
 
   if (intent === "duplicate") {
-    const newId = form.get("newId") as string;
+    const rawNewId = form.get("newId") as string;
+    const newId = rawNewId?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     if (!newId) return null;
     const srcPath = join(ROLES_DIR, `${roleId}.yaml`);
     const destPath = join(ROLES_DIR, `${newId}.yaml`);

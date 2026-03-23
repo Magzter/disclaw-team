@@ -31,7 +31,7 @@ function buildMcpConfig(botId: string, stateDir: string, configPath: string): st
         command: '/bin/sh',
         args: [
           '-c',
-          `BOT_ID=${botId} CLAUDE_TEAM_CONFIG=${configPath} DISCORD_STATE_DIR=${stateDir} exec ${rt} ${server}`,
+          `BOT_ID='${botId}' CLAUDE_TEAM_CONFIG='${configPath}' DISCORD_STATE_DIR='${stateDir}' exec '${rt}' '${server}'`,
         ],
       },
     },
@@ -145,7 +145,7 @@ function generateBotState(config: ReturnType<typeof loadConfig>, botId: string, 
             hooks: [
               {
                 type: 'command',
-                command: `BOT_ID=${botId} DISCORD_BOT_TOKEN=${token} DISCORD_OWNER_ID=${ownerDiscordId} ${rt} ${hookScript}`,
+                command: `BOT_ID='${botId}' DISCORD_BOT_TOKEN='${token}' DISCORD_OWNER_ID='${ownerDiscordId}' '${rt}' '${hookScript}'`,
                 timeout: 130,
               },
             ],
@@ -176,25 +176,26 @@ function generateBotState(config: ReturnType<typeof loadConfig>, botId: string, 
   }
 
   const permFlag = safeMode ? '' : '--dangerously-skip-permissions '
-  const claudeCmd = `cd ${workspace} && claude ${permFlag}${modelFlag}${effortFlag}--dangerously-load-development-channels server:disclaw-team --mcp-config ${mcpConfigFile} --settings ${settingsFile} --append-system-prompt "$(cat ${promptFile})"`
+  const claudeCmd = `cd "${workspace}" && claude ${permFlag}${modelFlag}${effortFlag}--dangerously-load-development-channels server:disclaw-team --mcp-config "${mcpConfigFile}" --settings "${settingsFile}" --append-system-prompt "$(cat "${promptFile}")"`
 
-  // Write launch script
-  writeFileSync(join(stateDir, 'launch.sh'), `#!/bin/sh\n${claudeCmd}\n`, { mode: 0o755 })
+  // Write launch script (used by tmux to avoid shell quoting issues)
+  const launchScript = join(stateDir, 'launch.sh')
+  writeFileSync(launchScript, `#!/bin/sh\n${claudeCmd}\n`, { mode: 0o755 })
 
-  return { claudeCmd, bot }
+  return { claudeCmd, launchScript, bot }
 }
 
-function launchBots(botIds: string[], commands: Map<string, { claudeCmd: string; name: string }>) {
+function launchBots(botIds: string[], commands: Map<string, { launchScript: string; name: string }>) {
   let firstBot = true
   for (const botId of botIds) {
     const cmd = commands.get(botId)!
     // Use botId-roleName for unique tmux window tab
     const windowName = tmuxWindowName(botId, cmd.name)
     if (firstBot && !tmuxSessionExists()) {
-      execSync(`tmux new-session -d -s ${TMUX_SESSION} -n ${windowName} '${cmd.claudeCmd.replace(/'/g, "'\\''")}'`)
+      execSync(`tmux new-session -d -s ${TMUX_SESSION} -n ${windowName} "${cmd.launchScript}"`)
       firstBot = false
     } else {
-      execSync(`tmux new-window -t ${TMUX_SESSION} -n ${windowName} '${cmd.claudeCmd.replace(/'/g, "'\\''")}'`)
+      execSync(`tmux new-window -t ${TMUX_SESSION} -n ${windowName} "${cmd.launchScript}"`)
     }
   }
 }
@@ -255,12 +256,12 @@ export async function start(args: string[]) {
   // Phase 1: Generate state and launch
   console.log(registryComplete ? 'Starting team...' : 'Starting team (first run — will auto-restart to pick up Discord IDs)...')
 
-  const commands = new Map<string, { claudeCmd: string; name: string }>()
+  const commands = new Map<string, { launchScript: string; name: string }>()
   for (const botId of botIds) {
     const token = tokens.get(botId)
     if (!token) { console.error(`No token for "${botId}"`); continue }
-    const { claudeCmd, bot } = generateBotState(config, botId, token, configPath, safeMode)
-    commands.set(botId, { claudeCmd, name: bot.name })
+    const { launchScript, bot } = generateBotState(config, botId, token, configPath, safeMode)
+    commands.set(botId, { launchScript, name: bot.name })
     console.log(`  ${bot.name} (${botId})`)
   }
 
@@ -308,8 +309,8 @@ export async function start(args: string[]) {
       for (const botId of botIds) {
         const token = tokens.get(botId)
         if (!token) continue
-        const { claudeCmd, bot } = generateBotState(config, botId, token, configPath, safeMode)
-        commands.set(botId, { claudeCmd, name: bot.name })
+        const { launchScript, bot } = generateBotState(config, botId, token, configPath, safeMode)
+        commands.set(botId, { launchScript, name: bot.name })
       }
 
       // Relaunch
@@ -320,16 +321,14 @@ export async function start(args: string[]) {
       for (const botId of botIds) {
         const cmd = commands.get(botId)
         if (!cmd) continue
-        const rolePart = cmd.name.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 15)
-        const windowName = `${botId}-${rolePart}`
+        const windowName = tmuxWindowName(botId, cmd.name)
         try { execSync(`tmux send-keys -t ${TMUX_SESSION}:${windowName} Enter`, { stdio: 'pipe' }) } catch {}
       }
       await sleep(2000)
       for (const botId of botIds) {
         const cmd = commands.get(botId)
         if (!cmd) continue
-        const rolePart = cmd.name.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 15)
-        const windowName = `${botId}-${rolePart}`
+        const windowName = tmuxWindowName(botId, cmd.name)
         try { execSync(`tmux send-keys -t ${TMUX_SESSION}:${windowName} Enter`, { stdio: 'pipe' }) } catch {}
       }
 
@@ -370,24 +369,17 @@ export async function start(args: string[]) {
   }
 
   // Launch web dashboard in a tmux window
-  const webCandidates = [
-    join(packageRoot(), 'web'),
-    join(packageRoot(), '..', 'web'),
-    join(process.cwd(), 'web'),
-  ]
-  const webDir = webCandidates.find(p => existsSync(join(p, 'package.json')))
-  if (webDir) {
-    const npmCmd = existsSync(join(webDir, 'node_modules')) ? 'npm run dev' : 'npm install && npm run dev'
-    const dashCmd = `cd ${webDir} && ${npmCmd}`
-    if (tmuxSessionExists()) {
-      execSync(`tmux new-window -t ${TMUX_SESSION} -n dashboard '${dashCmd.replace(/'/g, "'\\''")}'`)
-    }
+  const { findDashboard } = await import('../dashboard.js')
+  const dashboard = findDashboard()
+  let dashboardLine = ''
+  if (dashboard && tmuxSessionExists()) {
+    execSync(`tmux new-window -t ${TMUX_SESSION} -n dashboard '${dashboard.cmd.replace(/'/g, "'\\''")}'`)
+    dashboardLine = `\n  Dashboard:             http://localhost:${dashboard.port}`
   }
 
   console.log(`
 All ${botIds.length} bot(s) launched in tmux session "${TMUX_SESSION}".
-
-  Dashboard:             http://localhost:5173
+${dashboardLine}
   Attach to session:     tmux attach -t ${TMUX_SESSION}
   Switch windows:        Ctrl-B then 0-${botIds.length} (or n/p for next/prev)
   Stop all:              disclaw-team stop

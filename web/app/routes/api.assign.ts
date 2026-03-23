@@ -6,6 +6,7 @@ export async function action({ request }: { request: Request }) {
   const roleId = form.get("roleId") as string;
 
   if (!botId || !roleId) return redirect("/");
+  if (!/^[a-zA-Z0-9_-]+$/.test(botId) || !/^[a-zA-Z0-9_-]+$/.test(roleId)) return redirect("/");
 
   try {
     const { join } = await import("path");

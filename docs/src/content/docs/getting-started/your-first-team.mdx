@@ -1,17 +1,18 @@
 ---
 title: Your First Team
-description: Walk through the executive template — the default 3-bot team that ships with disclaw-team.
+description: Walk through the executive template — the default 4-bot team that ships with disclaw-team.
 ---
 
 This guide walks through the executive template — the default team that ships with disclaw-team. It's the fastest way to get a working multi-bot setup without writing any configuration by hand.
 
 ## What the executive template includes
 
-The executive template is a 3-bot team:
+The executive template is a 4-bot team:
 
-- **Orchestrator** — the entry point. Listens for tasks in the configured channel, delegates work to other bots via Discord @mentions, and synthesizes results.
-- **Researcher** — handles web search, reading, and analysis. Spawns subagents for deep research tasks.
-- **Writer** — produces documents, summaries, and reports based on research results.
+- **Team Lead** (orchestrator) — the entry point. Listens for tasks in the configured channel, delegates work to other bots via Discord @mentions, and synthesizes results.
+- **Researcher** (specialist) — handles web search, reading, and analysis. Spawns subagents for deep research tasks.
+- **Validator** (specialist) — reviews and validates work from other bots before delivery.
+- **Engineer** (executor) — produces code, documents, and implementations based on research and direction.
 
 The orchestrator delegates via Discord @mentions rather than spawning subagents directly. This keeps each bot as an independent Claude session with its own reasoning — genuine collaboration, not one mind wearing three masks.
 

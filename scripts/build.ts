@@ -5,7 +5,7 @@
  */
 
 import { execSync } from 'child_process'
-import { cpSync, mkdirSync, writeFileSync, readFileSync } from 'fs'
+import { cpSync, existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs'
 import { join } from 'path'
 
 const ROOT = join(new URL('.', import.meta.url).pathname, '..')
@@ -50,5 +50,17 @@ for (const file of shebangFiles) {
 console.log('Copying static assets...')
 cpSync(join(ROOT, 'src', 'roles'), join(DIST, 'roles'), { recursive: true })
 cpSync(join(ROOT, 'src', 'templates'), join(DIST, 'templates'), { recursive: true })
+
+// 4. Build web dashboard (pre-built so npx users get a working dashboard)
+const webDir = join(ROOT, 'web')
+if (existsSync(join(webDir, 'package.json'))) {
+  console.log('Building web dashboard...')
+  if (!existsSync(join(webDir, 'node_modules'))) {
+    execSync('npm install', { cwd: webDir, stdio: 'inherit' })
+  }
+  execSync('npm run build', { cwd: webDir, stdio: 'inherit' })
+  cpSync(join(webDir, 'build'), join(DIST, 'web', 'build'), { recursive: true })
+  console.log('Web dashboard built → dist/web/build/')
+}
 
 console.log('Build complete → dist/')

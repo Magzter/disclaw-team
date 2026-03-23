@@ -21,6 +21,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 
   const BASE = join(homedir(), ".disclaw-team");
   const { botId } = params;
+  if (!botId || /[\/\\.\x00]/.test(botId)) throw new Response("Invalid bot ID", { status: 400 });
   const status = getTeamStatus();
   const bot = status.bots.find(b => b.id === botId);
   if (!bot) throw new Response("Bot not found", { status: 404 });
@@ -56,6 +57,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 
   const BASE = join(homedir(), ".disclaw-team");
   const { botId } = params;
+  if (!botId || /[\/\\.\x00]/.test(botId)) throw new Response("Invalid bot ID", { status: 400 });
   const form = await request.formData();
   const intent = form.get("intent") as string;
 

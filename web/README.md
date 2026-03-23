@@ -42,4 +42,4 @@ Note: the web UI reads from and writes to `~/.disclaw-team/` on the host. Mount 
 
 - React Router v7 (SSR)
 - TailwindCSS v4
-- Node.js 18+ (or Bun)
+- Node.js 20+ (or Bun)

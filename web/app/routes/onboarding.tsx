@@ -32,8 +32,11 @@ export async function loader() {
       const rolesDir = join(homedir(), ".disclaw-team", "roles");
       mkdirSync(rolesDir, { recursive: true });
 
-      // Find the source roles directory
+      // Find the source roles directory (DISCLAW_ROOT set by CLI)
+      const root = process.env.DISCLAW_ROOT || process.cwd();
       const candidates = [
+        join(root, "dist", "roles"),
+        join(root, "src", "roles"),
         join(process.cwd(), "src", "roles"),
         join(process.cwd(), "..", "src", "roles"),
       ];
@@ -114,8 +117,17 @@ export async function action({ request }: { request: Request }) {
     }
 
     try {
-      const { installPreloadedRoles } = await import("../../../src/config/role-loader.js");
-      installPreloadedRoles();
+      const root = process.env.DISCLAW_ROOT || join(process.cwd(), "..");
+      const { existsSync: exists } = await import("fs");
+      const loaderCandidates = [
+        join(root, "dist", "config", "role-loader.js"),
+        join(root, "src", "config", "role-loader.ts"),
+      ];
+      const loaderPath = loaderCandidates.find(p => exists(p));
+      if (loaderPath) {
+        const { installPreloadedRoles } = await import(loaderPath);
+        installPreloadedRoles();
+      }
     } catch {}
 
     writeFileSync(join(BASE, "bots.yaml"), toYaml({ bots }, { lineWidth: 0 }));

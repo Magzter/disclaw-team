@@ -3,9 +3,12 @@ import { existsSync, readdirSync, readFileSync } from "fs";
 import { parse as parseYaml } from "yaml";
 
 function findTemplatesDir(): string {
+  const root = process.env.DISCLAW_ROOT || process.cwd();
   const candidates = [
+    join(root, "dist", "templates"),
+    join(root, "src", "templates"),
+    join(root, "..", "src", "templates"),
     join(process.cwd(), "src", "templates"),
-    join(process.cwd(), "..", "src", "templates"),
   ];
   return candidates.find(p => existsSync(p)) || candidates[0];
 }

@@ -3,7 +3,8 @@ import { redirect } from "react-router";
 export async function action({ request }: { request: Request }) {
   const form = await request.formData();
   const actionType = form.get("action") as string;
-  const botId = (form.get("botId") as string) || undefined;
+  const rawBotId = form.get("botId") as string | null;
+  const botId = rawBotId && /^[a-zA-Z0-9_-]+$/.test(rawBotId) ? rawBotId : undefined;
 
   console.log(`[api.action] ${actionType} ${botId || "all"}`);
 

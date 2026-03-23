@@ -60,7 +60,7 @@ export function loadAssignment(): AssignmentConfig {
 
 export function saveAssignment(config: AssignmentConfig): void {
   mkdirSync(BASE, { recursive: true })
-  writeFileSync(ASSIGNMENT_FILE, toYaml(config, { lineWidth: 0 }))
+  writeFileSync(ASSIGNMENT_FILE, toYaml(config, { lineWidth: 0 }), { mode: 0o600 })
 }
 
 // --- Install preloaded roles ---
@@ -71,13 +71,17 @@ export function installPreloadedRoles(): void {
   // Read the grouped role files from src/roles/ (or dist/roles/ in npm package)
   // Try multiple paths to find the source roles directory
   const candidates = [
-    join(new URL('../../roles', import.meta.url).pathname),
-    join(new URL('../../src/roles', import.meta.url).pathname),
-    join(process.cwd(), 'src', 'roles'),
-    join(new URL('../../../src/roles', import.meta.url).pathname),
+    join(new URL('../../roles', import.meta.url).pathname),          // dist/roles/ (npm)
+    join(new URL('../roles', import.meta.url).pathname),             // config/../roles = roles/ (if flat)
+    join(new URL('../../src/roles', import.meta.url).pathname),      // src/roles/ (dev)
+    join(new URL('../../../src/roles', import.meta.url).pathname),   // up from dist/config/
+    join(process.cwd(), 'src', 'roles'),                            // cwd fallback
   ]
   const srcRolesDir = candidates.find(p => existsSync(p))
-  if (!srcRolesDir) return
+  if (!srcRolesDir) {
+    console.warn('Warning: Could not find preloaded roles. Looked in:\n' + candidates.map(c => `  - ${c}`).join('\n'))
+    return
+  }
 
   for (const file of readdirSync(srcRolesDir)) {
     if (!file.endsWith('.yaml')) continue
@@ -279,7 +283,9 @@ export function resolveTokensFromEnv(bots: BotsConfig): Map<string, string> {
 
   if (missing.length > 0) {
     // Warn but don't fail — unassigned bots may not have tokens yet
-    process.stderr.write('Warning: missing tokens:\n' + missing.map(m => `  - ${m}`).join('\n') + '\n')
+    console.warn(`\nWarning: Missing Discord bot tokens:`)
+    for (const m of missing) console.warn(`  - ${m}`)
+    console.warn(`Add them to ~/.disclaw-team/.env\n`)
   }
 
   return tokens

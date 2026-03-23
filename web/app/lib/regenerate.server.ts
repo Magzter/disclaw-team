@@ -6,6 +6,33 @@ import { parse as parseYaml, stringify as toYaml } from "yaml";
 const BASE = join(homedir(), ".disclaw-team");
 
 /**
+ * Find the role-loader module. Works from both dev (web/) and production (dist/web/build/).
+ * Uses DISCLAW_ROOT env var set by the CLI when launching the dashboard.
+ */
+async function importRoleLoader() {
+  const root = process.env.DISCLAW_ROOT || join(process.cwd(), "..");
+  // Only try .js — Node can't import .ts without a loader
+  const candidates = [
+    join(root, "dist", "config", "role-loader.js"),
+    join(root, "config", "role-loader.js"),
+  ];
+  const modulePath = candidates.find(p => existsSync(p));
+  if (!modulePath) throw new Error("Cannot find role-loader module. Is DISCLAW_ROOT set?");
+  return import(modulePath);
+}
+
+async function importGenerator(name: string) {
+  const root = process.env.DISCLAW_ROOT || join(process.cwd(), "..");
+  const candidates = [
+    join(root, "dist", "generator", `${name}.js`),
+    join(root, "generator", `${name}.js`),
+  ];
+  const modulePath = candidates.find(p => existsSync(p));
+  if (!modulePath) throw new Error(`Cannot find generator module: ${name}. Is DISCLAW_ROOT set?`);
+  return import(modulePath);
+}
+
+/**
  * Regenerate team.yaml and all per-bot state files (CLAUDE.md, system-prompt.txt, access.json)
  * from the current bots.yaml + assignment.yaml + roles.
  *
@@ -18,9 +45,9 @@ export async function regenerateAllState(): Promise<void> {
   if (!existsSync(botsFile) || !existsSync(assignFile)) return;
 
   try {
-    const { loadBots, loadAssignment, generateTeamConfig, resolveTokensFromEnv } = await import("../../../src/config/role-loader.js");
-    const { generateAccessJson } = await import("../../../src/generator/access-json.js");
-    const { generateClaudeMd } = await import("../../../src/generator/claude-md.js");
+    const { loadBots, loadAssignment, generateTeamConfig, resolveTokensFromEnv } = await importRoleLoader();
+    const { generateAccessJson } = await importGenerator("access-json");
+    const { generateClaudeMd } = await importGenerator("claude-md");
 
     const bots = loadBots();
     const assignment = loadAssignment();

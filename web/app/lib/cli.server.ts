@@ -3,6 +3,9 @@ import { join } from "path";
 import { existsSync } from "fs";
 
 function findProjectRoot(): string {
+  // DISCLAW_ROOT is set by the CLI when launching the dashboard
+  if (process.env.DISCLAW_ROOT) return process.env.DISCLAW_ROOT;
+
   const candidates = [
     join(process.cwd(), ".."),
     join(process.cwd()),
@@ -10,7 +13,7 @@ function findProjectRoot(): string {
   for (const c of candidates) {
     if (existsSync(join(c, "src", "cli", "index.ts")) || existsSync(join(c, "dist", "cli", "index.js"))) return c;
   }
-  throw new Error("Cannot find disclaw-team project root");
+  throw new Error("Cannot find disclaw-team project root. Is DISCLAW_ROOT set?");
 }
 
 function findCli(): { cli: string; runtime: string; root: string } {
@@ -49,26 +52,37 @@ function runCliAsync(command: string): void {
   child.unref();
 }
 
+/** Sanitize bot ID for safe shell use */
+function sanitizeBotId(botId?: string): string {
+  if (!botId) return "";
+  return botId.replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
 export function cliStart(botId?: string) {
-  runCliAsync(`start ${botId || ""}`);
+  runCliAsync(`start ${sanitizeBotId(botId)}`);
 }
 
 export function cliStop(botId?: string) {
-  return runCli(`stop ${botId || ""}`);
+  return runCli(`stop ${sanitizeBotId(botId)}`);
 }
 
 export function cliStatus() {
   return runCli("status");
 }
 
+/** Sanitize profile name for safe shell use */
+function sanitizeName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
 export function cliSwitchSave(name: string) {
-  return runCli(`switch save ${name}`);
+  return runCli(`switch save ${sanitizeName(name)}`);
 }
 
 export function cliSwitchLoad(name: string) {
-  return runCli(`switch load ${name}`, 60000);
+  return runCli(`switch load ${sanitizeName(name)}`, 60000);
 }
 
 export function cliSwitchDelete(name: string) {
-  return runCli(`switch delete ${name}`);
+  return runCli(`switch delete ${sanitizeName(name)}`);
 }
